@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/florianwoelki/kira/sandbox"
 )
@@ -23,12 +24,25 @@ func main() {
 		}
 	}()
 
-	code := "print(\"Hello World\")"
+	code := `while True:
+	a = 1`
 
 	s, err := sandbox.NewSandbox("python", []byte(code))
 	if err != nil {
 		panic(err)
 	}
+	defer s.Clean()
+
+	go func() {
+		for t := range time.Tick(time.Second * 1) {
+			fmt.Println("ticking", t)
+			h, _ := time.ParseDuration("5s")
+			expireTime := s.LastTimestamp.Add(h)
+			if expireTime.Before(time.Now()) {
+				s.Clean()
+			}
+		}
+	}()
 
 	output, err := s.Run()
 	if err != nil {
@@ -38,6 +52,4 @@ func main() {
 	for _, op := range output {
 		fmt.Println(op.Body)
 	}
-
-	s.Clean()
 }

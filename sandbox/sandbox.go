@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"time"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -16,14 +17,12 @@ import (
 )
 
 type Sandbox struct {
-	ctx context.Context
-
-	UUID   string
-	Runner *runner
-
-	cli         *client.Client
-	ContainerID string
-
+	ctx              context.Context
+	UUID             string
+	Runner           *runner
+	LastTimestamp    time.Time
+	cli              *client.Client
+	ContainerID      string
 	SourceVolumePath string
 	fileName         string
 }
@@ -68,6 +67,7 @@ func NewSandbox(language string, code []byte) (*Sandbox, error) {
 		ctx:              ctx,
 		UUID:             uid.String(),
 		Runner:           runner,
+		LastTimestamp:    time.Now(),
 		cli:              cli,
 		SourceVolumePath: sourceVolumePath,
 		fileName:         fileName,
