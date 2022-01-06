@@ -24,9 +24,16 @@ func main() {
 		}
 	}()
 
-	code := `print("Hello World")`
+	code := `package main
 
-	s, err := sandbox.NewSandbox("python", []byte(code))
+import "fmt"
+	
+func main() {
+	fmt.Println("Hello World")
+}
+`
+
+	s, err := sandbox.NewSandbox("go", []byte(code))
 	if err != nil {
 		panic(err)
 	}
@@ -55,7 +62,7 @@ func main() {
 	}
 
 	for _, op := range output {
-		fmt.Println(op.Body)
+		fmt.Println(op)
 	}
 
 	stopTicking <- true
