@@ -12,14 +12,16 @@ type runner struct {
 	MaxMemory       int64
 }
 
-var PythonRunner = runner{
-	Name:            "python",
-	Ext:             ".py",
-	Image:           "python:3.9.1-alpine",
-	BuildCmd:        "",
-	RunCmd:          "python3 code.py",
-	Env:             []string{},
-	DefaultFileName: "code.py",
-	MaxCPUs:         2,
-	MaxMemory:       128,
+var runners = []runner{
+	{
+		Name:            "python",
+		Ext:             ".py",
+		Image:           "python:3.9.1-alpine",
+		BuildCmd:        "",
+		RunCmd:          "python3 code.py",
+		Env:             []string{},
+		DefaultFileName: "code.py",
+		MaxCPUs:         2,
+		MaxMemory:       128,
+	},
 }

@@ -24,8 +24,7 @@ func main() {
 		}
 	}()
 
-	code := `while True:
-	a = 1`
+	code := `print("Hello World")`
 
 	s, err := sandbox.NewSandbox("python", []byte(code))
 	if err != nil {
