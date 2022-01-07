@@ -35,4 +35,15 @@ var runners = []runner{
 		MaxCPUs:         2,
 		MaxMemory:       128,
 	},
+	{
+		Name:            "c",
+		Ext:             ".c",
+		Image:           "gcc:latest",
+		BuildCmd:        "gcc -v code.c -o code",
+		RunCmd:          "./code",
+		Env:             []string{},
+		DefaultFileName: "code.c",
+		MaxCPUs:         2,
+		MaxMemory:       128,
+	},
 }
