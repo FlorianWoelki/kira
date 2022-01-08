@@ -2,15 +2,38 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"github.com/florianwoelki/kira/sandbox"
+	"github.com/urfave/cli"
 )
 
 func main() {
+	app := cli.NewApp()
+	app.Name = "kira"
+	app.Usage = "Use the kira code execution engine to run your code."
+	app.Commands = []cli.Command{
+		{
+			Name:  "execute",
+			Usage: "Execute a test kira code",
+			Action: func(ctx *cli.Context) error {
+				execute()
+				return nil
+			},
+		},
+	}
+
+	err := app.Run(os.Args)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func execute() {
 	c := make(chan os.Signal)
 
 	signal.Notify(c, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
