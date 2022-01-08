@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/docker/docker/api/types"
@@ -152,7 +153,11 @@ func (s *Sandbox) setupEnvironment() (*Output, error) {
 func (s *Sandbox) Execute(cmd, fileName string) (*Output, error) {
 	if len(cmd) == 0 {
 		if len(s.Runner.BuildCmd) > 0 {
-			cmd = s.Runner.BuildCmd + " && " + s.Runner.RunCmd
+			if len(fileName) > 0 && s.Runner.Name == "java" && path.Ext(fileName) == s.Runner.Ext {
+				cmd = strings.ReplaceAll(s.Runner.BuildCmd, s.Runner.DefaultFileName, fileName) + " && " + strings.ReplaceAll(s.Runner.RunCmd, "code", strings.ReplaceAll(fileName, s.Runner.Ext, ""))
+			} else {
+				cmd = s.Runner.BuildCmd + " && " + s.Runner.RunCmd
+			}
 		} else {
 			cmd = s.Runner.RunCmd
 		}

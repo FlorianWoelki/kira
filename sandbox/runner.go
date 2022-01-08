@@ -46,4 +46,15 @@ var runners = []runner{
 		MaxCPUs:         2,
 		MaxMemory:       128,
 	},
+	{
+		Name:            "java",
+		Ext:             ".java",
+		Image:           "openjdk:8u232-jdk",
+		BuildCmd:        "javac code.java",
+		RunCmd:          "java code",
+		Env:             []string{},
+		DefaultFileName: "code.java",
+		MaxCPUs:         2,
+		MaxMemory:       128,
+	},
 }

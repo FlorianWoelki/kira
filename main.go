@@ -24,16 +24,15 @@ func main() {
 		}
 	}()
 
-	code := `#include <stdio.h>
-
-int main()
-{
-    printf("Hello World");
-    return 0;
+	code := `
+	class code {
+    public static void main(String[] args) {
+        System.out.println("Hello, World!"); 
+    }
 }
 `
 
-	s, err := sandbox.NewSandbox("c", []byte(code))
+	s, err := sandbox.NewSandbox("java", []byte(code))
 	if err != nil {
 		panic(err)
 	}
