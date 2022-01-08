@@ -24,15 +24,16 @@ func main() {
 		}
 	}()
 
-	code := `
-	class code {
-    public static void main(String[] args) {
-        System.out.println("Hello, World!"); 
-    }
+	code := `package main
+
+import "fmt"
+
+func main() {
+	fmt.Println("Hello World")
 }
 `
 
-	s, err := sandbox.NewSandbox("java", []byte(code))
+	s, err := sandbox.NewSandbox("go", []byte(code))
 	if err != nil {
 		panic(err)
 	}
