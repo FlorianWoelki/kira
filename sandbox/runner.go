@@ -90,4 +90,16 @@ int main()
 		MaxMemory:       128,
 		ExampleCode:     `console.log("Hello World");`,
 	},
+	{
+		Name:            "typescript",
+		Ext:             ".ts",
+		Image:           "florianwoelki/kira-typescript",
+		BuildCmd:        "tsc code.ts",
+		RunCmd:          "node code.js",
+		Env:             []string{},
+		DefaultFileName: "code.ts",
+		MaxCPUs:         2,
+		MaxMemory:       128,
+		ExampleCode:     `console.log("Hello World");`,
+	},
 }

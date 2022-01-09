@@ -116,7 +116,7 @@ func execute(runner *sandbox.Runner, code string) {
 				return
 			default:
 				fmt.Println("ticking", t)
-				h, _ := time.ParseDuration("5s")
+				h, _ := time.ParseDuration("30s")
 				expireTime := s.LastTimestamp.Add(h)
 				if expireTime.Before(time.Now()) {
 					s.Clean()
