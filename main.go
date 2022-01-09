@@ -47,16 +47,9 @@ func execute() {
 		}
 	}()
 
-	code := `package main
+	code := `var i = 42; console.log("Hello World " + i);`
 
-import "fmt"
-
-func main() {
-	fmt.Println("Hello World")
-}
-`
-
-	s, err := sandbox.NewSandbox("go", []byte(code))
+	s, err := sandbox.NewSandbox("javascript", []byte(code))
 	if err != nil {
 		panic(err)
 	}

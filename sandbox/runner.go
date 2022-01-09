@@ -57,4 +57,15 @@ var runners = []runner{
 		MaxCPUs:         2,
 		MaxMemory:       128,
 	},
+	{
+		Name:            "javascript",
+		Ext:             ".js",
+		Image:           "node:lts-alpine",
+		BuildCmd:        "",
+		RunCmd:          "node code.js",
+		Env:             []string{},
+		DefaultFileName: "code.js",
+		MaxCPUs:         2,
+		MaxMemory:       128,
+	},
 }
