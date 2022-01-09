@@ -9,6 +9,7 @@ Currently it supports the following languages:
 - C (Latest)
 - Python (3.9.1)
 - JavaScript (node:lts)
+- TypeScript (node:alpine && latest tsc)
 
 ## Installation
 
