@@ -8,6 +8,7 @@ Currently it supports the following languages:
 - Java (8)
 - C (Latest)
 - Python (3.9.1)
+- JavaScript (node:lts)
 
 ## Installation
 
