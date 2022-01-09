@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/signal"
@@ -25,7 +26,14 @@ func main() {
 						Name:    "language",
 						Aliases: []string{"l"},
 						Value:   "python",
-						Usage:   "Set the language for the kira sandbox runner.",
+						Usage:   "set the language for the kira sandbox runner.",
+					},
+					&cli.StringFlag{
+						Name:        "file",
+						Aliases:     []string{"f"},
+						Value:       "",
+						DefaultText: "execute an example code.",
+						Usage:       "set the specific file that should be executed.",
 					},
 				},
 				Action: func(ctx *cli.Context) error {
@@ -43,7 +51,13 @@ func main() {
 						return fmt.Errorf("no language found with name %s", language)
 					}
 
-					execute(runner)
+					filePath := ctx.String("file")
+					code, err := extractCodeOfFile(filePath)
+					if err != nil {
+						return fmt.Errorf("something went wrong while reading the file %s", filePath)
+					}
+
+					execute(runner, code)
 					return nil
 				},
 			},
@@ -56,7 +70,21 @@ func main() {
 	}
 }
 
-func execute(runner *sandbox.Runner) {
+func extractCodeOfFile(filePath string) (string, error) {
+	if filePath == "" {
+		return "", nil
+	}
+
+	content, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return "", err
+	}
+
+	code := string(content)
+	return code, nil
+}
+
+func execute(runner *sandbox.Runner, code string) {
 	c := make(chan os.Signal)
 
 	signal.Notify(c, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
@@ -70,7 +98,9 @@ func execute(runner *sandbox.Runner) {
 		}
 	}()
 
-	code := runner.ExampleCode
+	if code == "" {
+		code = runner.ExampleCode
+	}
 
 	s, err := sandbox.NewSandbox(runner.Name, []byte(code))
 	if err != nil {
