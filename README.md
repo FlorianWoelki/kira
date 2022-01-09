@@ -20,9 +20,30 @@ In addition, you need to pull the latest images by executing [`pull_images.sh`](
 
 ## Usage
 
-For now, you can only run your code by manipulating the [`main.go`](https://github.com/FlorianWoelki/kira/blob/main/main.go). You need to specify the language and the to be executed code.
+You can feel free to run the CLI by executing the `main.go` file with the following command:
 
-This will create a new container sandbox and tries to execute the code you have passed.
+```sh
+$ go run main.go
+```
+
+This will prompt you with some flags and commands you can use.
+
+### Commands and Flags
+
+The following section contains all the commands and flags that can be used while running the CLI.
+
+<details>
+  <summary>Execute</summary>
+
+  <p>
+    The execute command will execute code in a containerized sandbox.
+  </p>
+
+  | Flag | Aliases | Description | Default |
+  |---|---|---|---|
+  | --language | -l | Set the language for the kira sandbox runner. | python |
+  | --file | -f | Set the specific file that should be executed. | example code in runner struct |
+</details>
 
 ## Contributing
 
