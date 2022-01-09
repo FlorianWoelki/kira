@@ -9,41 +9,43 @@ import (
 	"time"
 
 	"github.com/florianwoelki/kira/sandbox"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 func main() {
-	app := cli.NewApp()
-	app.Name = "kira"
-	app.Usage = "Use the kira code execution engine to run your code."
-	app.Commands = []cli.Command{
-		{
-			Name:  "execute",
-			Usage: "Execute a test kira code",
-			Flags: []cli.Flag{
-				&cli.StringFlag{
-					Name:  "language",
-					Value: "python",
-					Usage: "Set the language for the kira sandbox runner.",
+	app := &cli.App{
+		Name:  "kira",
+		Usage: "Use the kira code execution engine to run your code.",
+		Commands: []*cli.Command{
+			{
+				Name:  "execute",
+				Usage: "Execute a test kira code",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:    "language",
+						Aliases: []string{"l"},
+						Value:   "python",
+						Usage:   "Set the language for the kira sandbox runner.",
+					},
 				},
-			},
-			Action: func(ctx *cli.Context) error {
-				language := ctx.String("language")
+				Action: func(ctx *cli.Context) error {
+					language := ctx.String("language")
 
-				var runner *sandbox.Runner
-				for _, r := range sandbox.Runners {
-					if language == r.Name {
-						runner = &r
-						break
+					var runner *sandbox.Runner
+					for _, r := range sandbox.Runners {
+						if language == r.Name {
+							runner = &r
+							break
+						}
 					}
-				}
 
-				if runner == nil {
-					return fmt.Errorf("no language found with name %s", language)
-				}
+					if runner == nil {
+						return fmt.Errorf("no language found with name %s", language)
+					}
 
-				execute(runner)
-				return nil
+					execute(runner)
+					return nil
+				},
 			},
 		},
 	}

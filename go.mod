@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/docker/docker v20.10.12+incompatible
 	github.com/google/uuid v1.3.0
-	github.com/urfave/cli v1.22.2
+	github.com/urfave/cli/v2 v2.3.0
 )
 
 require (
