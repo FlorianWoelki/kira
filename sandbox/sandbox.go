@@ -20,7 +20,7 @@ import (
 type Sandbox struct {
 	ctx              context.Context
 	UUID             string
-	Runner           *runner
+	Runner           *Runner
 	LastTimestamp    time.Time
 	cli              *client.Client
 	ContainerID      string
@@ -41,8 +41,8 @@ func NewSandbox(language string, code []byte) (*Sandbox, error) {
 		return nil, err
 	}
 
-	var runner *runner
-	for _, r := range runners {
+	var runner *Runner
+	for _, r := range Runners {
 		if language == r.Name {
 			runner = &r
 			break

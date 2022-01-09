@@ -1,6 +1,6 @@
 package sandbox
 
-type runner struct {
+type Runner struct {
 	Name            string
 	Ext             string
 	Image           string
@@ -10,9 +10,10 @@ type runner struct {
 	Env             []string
 	MaxCPUs         int64
 	MaxMemory       int64
+	ExampleCode     string
 }
 
-var runners = []runner{
+var Runners = []Runner{
 	{
 		Name:            "python",
 		Ext:             ".py",
@@ -23,6 +24,7 @@ var runners = []runner{
 		DefaultFileName: "code.py",
 		MaxCPUs:         2,
 		MaxMemory:       128,
+		ExampleCode:     `print("Hello World")`,
 	},
 	{
 		Name:            "go",
@@ -34,6 +36,13 @@ var runners = []runner{
 		DefaultFileName: "code.go",
 		MaxCPUs:         2,
 		MaxMemory:       128,
+		ExampleCode: `package main
+
+import "fmt"
+
+func main() {
+	fmt.Println("Hello World")
+}`,
 	},
 	{
 		Name:            "c",
@@ -45,6 +54,13 @@ var runners = []runner{
 		DefaultFileName: "code.c",
 		MaxCPUs:         2,
 		MaxMemory:       128,
+		ExampleCode: `#include <stdio.h>
+
+int main()
+{
+	printf("Hello World");
+	return 0;
+}`,
 	},
 	{
 		Name:            "java",
@@ -56,6 +72,11 @@ var runners = []runner{
 		DefaultFileName: "code.java",
 		MaxCPUs:         2,
 		MaxMemory:       128,
+		ExampleCode: `class code {
+	public static void main(String[] args) {
+		System.out.println("Hello World");
+	}
+}`,
 	},
 	{
 		Name:            "javascript",
@@ -67,5 +88,6 @@ var runners = []runner{
 		DefaultFileName: "code.js",
 		MaxCPUs:         2,
 		MaxMemory:       128,
+		ExampleCode:     `console.log("Hello World");`,
 	},
 }
