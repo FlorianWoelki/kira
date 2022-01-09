@@ -24,7 +24,7 @@ func main() {
 				Flags: []cli.Flag{
 					&cli.StringFlag{
 						Name:    "language",
-						Aliases: []string{"l"},
+						Aliases: []string{"l", "lang"},
 						Value:   "python",
 						Usage:   "set the language for the kira sandbox runner.",
 					},

@@ -41,7 +41,7 @@ The following section contains all the commands and flags that can be used while
 
   | Flag | Aliases | Description | Default |
   |---|---|---|---|
-  | --language | -l | Set the language for the kira sandbox runner. | python |
+  | --language | -l, -lang | Set the language for the kira sandbox runner. | python |
   | --file | -f | Set the specific file that should be executed. | example code in runner struct |
 </details>
 
