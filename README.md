@@ -10,6 +10,7 @@ Currently it supports the following languages:
 - Python (3.9.1)
 - JavaScript (node:lts)
 - TypeScript (node:alpine && latest tsc)
+- Julia (1.7.1-alpine)
 
 ## Installation
 
