@@ -5,4 +5,5 @@ docker pull gcc:latest
 docker pull openjdk:8u232-jdk
 docker pull node:lts-alpine
 docker pull florianwoelki/kira-typescript
+docker pull julia:1.7.1-alpine
 docker-compose up -d
