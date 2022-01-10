@@ -114,4 +114,22 @@ int main()
 		MaxMemory:       128,
 		ExampleCode:     `print("Hello World")`,
 	},
+	{
+		Name:            "cpp",
+		Ext:             ".cpp",
+		Image:           "gcc:latest",
+		BuildCmd:        "gcc -v code.cpp -lstdc++ -o code",
+		RunCmd:          "./code",
+		Env:             []string{},
+		DefaultFileName: "code.cpp",
+		MaxCPUs:         2,
+		MaxMemory:       128,
+		ExampleCode: `#include <iostream>
+
+int main()
+{
+  std::cout << "Hello World" << std::endl;
+  return 0;
+}`,
+	},
 }
