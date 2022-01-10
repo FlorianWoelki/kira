@@ -4,13 +4,14 @@ kira is a remote docker based sandbox code execution engine written in Go.
 
 Currently it supports the following languages:
 
-- Go (1.17)
-- Java (8)
-- C (Latest)
-- Python (3.9.1)
-- JavaScript (node:lts)
-- TypeScript (node:alpine && latest tsc)
-- Julia (1.7.1-alpine)
+- Go (golang:1.17-alpine)
+- Java (openjdk:8u232-jdk)
+- C (gcc:latest)
+- C++ (gcc:latest)
+- Python (python:3.9.1-alpine)
+- JavaScript (node:lts-alpine)
+- JavaScript (node:lts-alpine & latest tsc)
+- Julia (julia:1.7.1-alpine)
 
 ## Installation
 
