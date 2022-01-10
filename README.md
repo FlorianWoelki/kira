@@ -1,6 +1,6 @@
 # kira
 
-kira is a remote docker based sandbox code runner written in Go.
+kira is a remote docker based sandbox code execution engine written in Go.
 
 Currently it supports the following languages:
 
