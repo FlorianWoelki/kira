@@ -4,12 +4,18 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 	"time"
 )
 
-func Run(runner *Runner, code string) {
+type runOutput struct {
+	BuildBody  string `json:"buildBody"`
+	BuildError bool   `json:"buildError"`
+	RunBody    string `json:"runBody"`
+	RunError   bool   `json:"runError"`
+}
+
+func Run(runner *Runner, code string) (*Sandbox, runOutput, error) {
 	c := make(chan os.Signal)
 
 	signal.Notify(c, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
@@ -29,13 +35,13 @@ func Run(runner *Runner, code string) {
 
 	s, err := NewSandbox(runner.Name, []byte(code))
 	if err != nil {
-		panic(err)
+		return &Sandbox{}, runOutput{}, err
 	}
-	defer s.Clean()
 
 	stopTicking := make(chan bool)
 	go func() {
-		for t := range time.Tick(time.Second * 1) {
+		timer := time.NewTicker(time.Second * 1)
+		for t := range timer.C {
 			select {
 			case <-stopTicking:
 				return
@@ -52,13 +58,14 @@ func Run(runner *Runner, code string) {
 
 	output, err := s.Run()
 	if err != nil {
-		panic(err)
+		return &Sandbox{}, runOutput{}, err
 	}
 
-	fmt.Println("\n=== BUILD OUTPUT ===")
-	fmt.Printf("Error: %s, Body: %s\n\n", strconv.FormatBool(output[0].Error), output[0].Body)
-	fmt.Println("=== RUN OUTPUT ===")
-	fmt.Printf("Error: %s, Body: %s\n", strconv.FormatBool(output[1].Error), output[1].Body)
-
 	stopTicking <- true
+	return s, runOutput{
+		BuildBody:  output[0].Body,
+		BuildError: output[0].Error,
+		RunBody:    output[1].Body,
+		RunError:   output[1].Error,
+	}, nil
 }

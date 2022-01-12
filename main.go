@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/florianwoelki/kira/sandbox"
 	"github.com/urfave/cli/v2"
@@ -54,7 +55,16 @@ func main() {
 						return fmt.Errorf("something went wrong while reading the file %s", filePath)
 					}
 
-					sandbox.Run(runner, code)
+					s, output, err := sandbox.Run(runner, code)
+					if err != nil {
+						return fmt.Errorf("something went wrong while executing sandbox runner %s", err)
+					}
+					defer s.Clean()
+
+					fmt.Println("\n=== BUILD OUTPUT ===")
+					fmt.Printf("Error: %s, Body: %s\n\n", strconv.FormatBool(output.BuildError), output.BuildBody)
+					fmt.Println("=== RUN OUTPUT ===")
+					fmt.Printf("Error: %s, Body: %s\n", strconv.FormatBool(output.RunError), output.RunBody)
 					return nil
 				},
 			},

@@ -15,5 +15,5 @@
 # vendor/
 
 # Generated files
-volume/*
+**/volume/*
 kira
