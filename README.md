@@ -23,7 +23,7 @@ In addition, you need to pull the latest images by executing [`pull_images.sh`](
 
 ## Usage
 
-You can feel free to run the CLI by executing the `main.go` file with the following command:
+You can feel free to run the CLI by executing the `main.go` file in the root directory with the following command:
 
 ```sh
 $ go run main.go
@@ -31,7 +31,9 @@ $ go run main.go
 
 This will prompt you with some flags and commands you can use.
 
-### Commands and Flags
+In addition, you can start the REST API running the `main.go` file in the `rest` directory. This will start the REST API on port `9090`.
+
+### Commands and Flags for the CLI
 
 The following section contains all the commands and flags that can be used while running the CLI.
 
@@ -46,6 +48,26 @@ The following section contains all the commands and flags that can be used while
   |---|---|---|---|
   | --language | -l, -lang | Set the language for the kira sandbox runner. | python |
   | --file | -f | Set the specific file that should be executed. | example code in runner struct |
+</details>
+
+### REST API endpoints
+
+The following section contains all the REST API endpoints. The JSON body and endpoints follow the CLI structure.
+
+<details>
+  <summary>/execute</summary>
+
+  <p>
+    The execute endpoint will execute code in a containerized sandbox.
+  </p>
+
+  This JSON structure is an example for the request body:
+  ```json
+  {
+      "language": "python",
+      "content": "print(\"42 Hello World\")"
+  }
+  ```
 </details>
 
 ## Contributing
