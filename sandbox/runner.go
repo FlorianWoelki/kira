@@ -132,4 +132,16 @@ int main()
   return 0;
 }`,
 	},
+	{
+		Name:            "elixir",
+		Ext:             ".exs",
+		Image:           "elixir:1.13.1-alpine",
+		BuildCmd:        "",
+		RunCmd:          "elixir code.exs",
+		Env:             []string{},
+		DefaultFileName: "code.exs",
+		MaxCPUs:         2,
+		MaxMemory:       128,
+		ExampleCode:     `IO.puts "Hello World"`,
+	},
 }
