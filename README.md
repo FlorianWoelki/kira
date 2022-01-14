@@ -12,6 +12,7 @@ Currently it supports the following languages:
 - JavaScript (node:lts-alpine)
 - JavaScript (node:lts-alpine & latest tsc)
 - Julia (julia:1.7.1-alpine)
+- Elixir (elixir:1.13.1-alpine)
 
 ## Installation
 
