@@ -1,6 +1,6 @@
 package sandbox
 
-type Runner struct {
+type Language struct {
 	Name            string
 	Ext             string
 	Image           string
@@ -13,7 +13,7 @@ type Runner struct {
 	ExampleCode     string
 }
 
-var Runners = []Runner{
+var Languages = []Language{
 	{
 		Name:            "python",
 		Ext:             ".py",

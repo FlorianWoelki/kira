@@ -20,7 +20,7 @@ import (
 type Sandbox struct {
 	ctx              context.Context
 	UUID             string
-	Runner           *Runner
+	Language         *Language
 	LastTimestamp    time.Time
 	cli              *client.Client
 	ContainerID      string
@@ -41,15 +41,15 @@ func NewSandbox(language string, code []byte) (*Sandbox, error) {
 		return nil, err
 	}
 
-	var runner *Runner
-	for _, r := range Runners {
-		if language == r.Name {
-			runner = &r
+	var lang *Language
+	for _, l := range Languages {
+		if language == l.Name {
+			lang = &l
 			break
 		}
 	}
 
-	if runner == nil {
+	if lang == nil {
 		return nil, fmt.Errorf("no language found with name %s", language)
 	}
 
@@ -67,7 +67,7 @@ func NewSandbox(language string, code []byte) (*Sandbox, error) {
 		return nil, err
 	}
 
-	fileName := "code" + runner.Ext
+	fileName := "code" + lang.Ext
 	filePath := path.Join(sourceVolumePath, fileName)
 	err = ioutil.WriteFile(filePath, code, 0755)
 	if err != nil {
@@ -77,7 +77,7 @@ func NewSandbox(language string, code []byte) (*Sandbox, error) {
 	return &Sandbox{
 		ctx:              ctx,
 		UUID:             uid.String(),
-		Runner:           runner,
+		Language:         lang,
 		LastTimestamp:    time.Now(),
 		cli:              cli,
 		SourceVolumePath: sourceVolumePath,
@@ -95,7 +95,7 @@ func (s *Sandbox) Run() ([]*Output, error) {
 	var networkMode container.NetworkMode
 	createContainerResp, err := s.cli.ContainerCreate(s.ctx,
 		&container.Config{
-			Image:      s.Runner.Image,
+			Image:      s.Language.Image,
 			Tty:        true,
 			WorkingDir: "/runtime",
 		},
@@ -109,8 +109,8 @@ func (s *Sandbox) Run() ([]*Output, error) {
 				},
 			},
 			Resources: container.Resources{
-				NanoCPUs: s.Runner.MaxCPUs * 1000000000,
-				Memory:   s.Runner.MaxMemory * 1024 * 1024,
+				NanoCPUs: s.Language.MaxCPUs * 1000000000,
+				Memory:   s.Language.MaxMemory * 1024 * 1024,
 			},
 		}, nil, nil, s.UUID)
 
@@ -144,7 +144,7 @@ func (s *Sandbox) Run() ([]*Output, error) {
 }
 
 func (s *Sandbox) setupEnvironment() (*Output, error) {
-	if len(s.Runner.BuildCmd) != 0 {
+	if len(s.Language.BuildCmd) != 0 {
 		return s.Execute("", "")
 	}
 
@@ -153,19 +153,19 @@ func (s *Sandbox) setupEnvironment() (*Output, error) {
 
 func (s *Sandbox) Execute(cmd, fileName string) (*Output, error) {
 	if len(cmd) == 0 {
-		if len(s.Runner.BuildCmd) > 0 {
-			if len(fileName) > 0 && s.Runner.Name == "java" && path.Ext(fileName) == s.Runner.Ext {
-				cmd = strings.ReplaceAll(s.Runner.BuildCmd, s.Runner.DefaultFileName, fileName) + " && " + strings.ReplaceAll(s.Runner.RunCmd, "code", strings.ReplaceAll(fileName, s.Runner.Ext, ""))
+		if len(s.Language.BuildCmd) > 0 {
+			if len(fileName) > 0 && s.Language.Name == "java" && path.Ext(fileName) == s.Language.Ext {
+				cmd = strings.ReplaceAll(s.Language.BuildCmd, s.Language.DefaultFileName, fileName) + " && " + strings.ReplaceAll(s.Language.RunCmd, "code", strings.ReplaceAll(fileName, s.Language.Ext, ""))
 			} else {
-				cmd = s.Runner.BuildCmd + " && " + s.Runner.RunCmd
+				cmd = s.Language.BuildCmd + " && " + s.Language.RunCmd
 			}
 		} else {
-			cmd = s.Runner.RunCmd
+			cmd = s.Language.RunCmd
 		}
 	}
 
 	idResponse, err := s.cli.ContainerExecCreate(s.ctx, s.ContainerID, types.ExecConfig{
-		Env:          s.Runner.Env,
+		Env:          s.Language.Env,
 		Cmd:          []string{"/bin/sh", "-c", cmd},
 		Tty:          true,
 		AttachStderr: true,

@@ -30,21 +30,21 @@ func execute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var runner *sandbox.Runner
-	for _, r := range sandbox.Runners {
-		if eb.Language == r.Name {
-			runner = &r
+	var lang *sandbox.Language
+	for _, l := range sandbox.Languages {
+		if eb.Language == l.Name {
+			lang = &l
 			break
 		}
 	}
 
-	if runner == nil {
+	if lang == nil {
 		log.Fatalf("no language found with name %s", eb.Language)
 		http.Error(w, "Error trying to find valid sandbox runner", http.StatusBadRequest)
 		return
 	}
 
-	s, output, err := sandbox.Run(runner, eb.Content)
+	s, output, err := sandbox.Run(lang, eb.Content)
 	if err != nil {
 		log.Fatalf("error while executing sandbox runner: %s", err)
 		http.Error(w, "Error trying to execute sandbox runner", http.StatusInternalServerError)

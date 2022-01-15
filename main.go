@@ -44,15 +44,15 @@ func main() {
 				Action: func(ctx *cli.Context) error {
 					language := ctx.String("language")
 
-					var runner *sandbox.Runner
-					for _, r := range sandbox.Runners {
-						if language == r.Name {
-							runner = &r
+					var sandboxLang *sandbox.Language
+					for _, l := range sandbox.Languages {
+						if language == l.Name {
+							sandboxLang = &l
 							break
 						}
 					}
 
-					if runner == nil {
+					if sandboxLang == nil {
 						return fmt.Errorf("no language found with name %s", language)
 					}
 
@@ -66,7 +66,7 @@ func main() {
 					if testsPath != "" {
 						// TODO: Execute sandbox runner with tests.
 					} else {
-						s, output, err := sandbox.Run(runner, code)
+						s, output, err := sandbox.Run(sandboxLang, code)
 						if err != nil {
 							return fmt.Errorf("something went wrong while executing sandbox runner %s", err)
 						}
