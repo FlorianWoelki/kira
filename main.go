@@ -33,6 +33,13 @@ func main() {
 						DefaultText: "execute an example code.",
 						Usage:       "set the specific file that should be executed.",
 					},
+					&cli.StringFlag{
+						Name:        "tests",
+						Aliases:     []string{"t"},
+						Value:       "",
+						DefaultText: "execute based on tests.",
+						Usage:       "set the specific path of tests that are being executed and checked on.",
+					},
 				},
 				Action: func(ctx *cli.Context) error {
 					language := ctx.String("language")
@@ -55,16 +62,22 @@ func main() {
 						return fmt.Errorf("something went wrong while reading the file %s", filePath)
 					}
 
-					s, output, err := sandbox.Run(runner, code)
-					if err != nil {
-						return fmt.Errorf("something went wrong while executing sandbox runner %s", err)
-					}
-					defer s.Clean()
+					testsPath := ctx.String("tests")
+					if testsPath != "" {
+						// TODO: Execute sandbox runner with tests.
+					} else {
+						s, output, err := sandbox.Run(runner, code)
+						if err != nil {
+							return fmt.Errorf("something went wrong while executing sandbox runner %s", err)
+						}
+						defer s.Clean()
 
-					fmt.Println("\n=== BUILD OUTPUT ===")
-					fmt.Printf("Error: %s, Body: %s\n\n", strconv.FormatBool(output.BuildError), output.BuildBody)
-					fmt.Println("=== RUN OUTPUT ===")
-					fmt.Printf("Error: %s, Body: %s\n", strconv.FormatBool(output.RunError), output.RunBody)
+						fmt.Println("\n=== BUILD OUTPUT ===")
+						fmt.Printf("Error: %s, Body: %s\n\n", strconv.FormatBool(output.BuildError), output.BuildBody)
+						fmt.Println("=== RUN OUTPUT ===")
+						fmt.Printf("Error: %s, Body: %s\n", strconv.FormatBool(output.RunError), output.RunBody)
+					}
+
 					return nil
 				},
 			},
