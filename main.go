@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
 
+	"github.com/florianwoelki/kira/file"
 	"github.com/florianwoelki/kira/sandbox"
 	"github.com/urfave/cli/v2"
 )
@@ -57,7 +57,7 @@ func main() {
 					}
 
 					filePath := ctx.String("file")
-					code, err := extractCodeOfFile(filePath)
+					code, err := file.ExtractCodeOfFile(filePath)
 					if err != nil {
 						return fmt.Errorf("something went wrong while reading the file %s", filePath)
 					}
@@ -88,18 +88,4 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-func extractCodeOfFile(filePath string) (string, error) {
-	if filePath == "" {
-		return "", nil
-	}
-
-	content, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		return "", err
-	}
-
-	code := string(content)
-	return code, nil
 }
