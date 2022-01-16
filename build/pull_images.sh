@@ -7,4 +7,5 @@ docker pull node:lts-alpine
 docker pull florianwoelki/kira-typescript
 docker pull julia:1.7.1-alpine
 docker pull elixir:1.13.1-alpine
+docker pull swift:5.5.2
 docker-compose up -d

@@ -144,4 +144,16 @@ int main()
 		MaxMemory:       128,
 		ExampleCode:     `IO.puts "Hello World"`,
 	},
+	{
+		Name:            "swift",
+		Ext:             ".swift",
+		Image:           "swift:5.5.2",
+		BuildCmd:        "",
+		RunCmd:          "swift -module-cache-path . code.swift",
+		Env:             []string{},
+		DefaultFileName: "code.swift",
+		MaxCPUs:         2,
+		MaxMemory:       128,
+		ExampleCode:     `print("Hello World")`,
+	},
 }
