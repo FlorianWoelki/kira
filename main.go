@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/florianwoelki/kira/file"
 	"github.com/florianwoelki/kira/sandbox"
@@ -42,7 +43,7 @@ func main() {
 					},
 				},
 				Action: func(ctx *cli.Context) error {
-					language := ctx.String("language")
+					language := strings.ToLower(ctx.String("language"))
 
 					var sandboxLang *sandbox.Language
 					for _, l := range sandbox.Languages {
