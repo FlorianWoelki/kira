@@ -40,7 +40,7 @@ In addition, you can start the REST API running the `main.go` file in the `rest`
 The following section contains all the commands and flags that can be used while running the CLI.
 
 <details>
-  <summary>Execute</summary>
+  <summary>execute</summary>
 
   <p>
     The execute command will execute code in a containerized sandbox.
