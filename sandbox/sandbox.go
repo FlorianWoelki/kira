@@ -17,6 +17,11 @@ import (
 	"github.com/google/uuid"
 )
 
+type sandboxTest struct {
+	code     []byte
+	fileName string
+}
+
 type Sandbox struct {
 	ctx              context.Context
 	UUID             string
@@ -26,6 +31,7 @@ type Sandbox struct {
 	ContainerID      string
 	SourceVolumePath string
 	fileName         string
+	tests            []sandboxTest
 }
 
 type Output struct {
@@ -35,7 +41,7 @@ type Output struct {
 
 var hostVolumePath = path.Join(os.Getenv("APP_CONTAINER_PATH"), "volume")
 
-func NewSandbox(language string, code []byte) (*Sandbox, error) {
+func NewSandbox(language string, code []byte, tests []string) (*Sandbox, error) {
 	uid, err := uuid.NewUUID()
 	if err != nil {
 		return nil, err
@@ -74,6 +80,20 @@ func NewSandbox(language string, code []byte) (*Sandbox, error) {
 		return nil, err
 	}
 
+	testFiles := make([]sandboxTest, 0)
+	if len(tests) != 0 {
+		for i, testCode := range tests {
+			testFileName := fmt.Sprintf("test%d_%s", i, lang.TestFileAppendix) + lang.Ext
+			testFilePath := path.Join(sourceVolumePath, testFileName)
+			err = ioutil.WriteFile(testFilePath, []byte(testCode), 0755)
+			if err != nil {
+				return nil, err
+			}
+
+			testFiles = append(testFiles, sandboxTest{code: []byte(testCode), fileName: testFileName})
+		}
+	}
+
 	return &Sandbox{
 		ctx:              ctx,
 		UUID:             uid.String(),
@@ -82,6 +102,7 @@ func NewSandbox(language string, code []byte) (*Sandbox, error) {
 		cli:              cli,
 		SourceVolumePath: sourceVolumePath,
 		fileName:         fileName,
+		tests:            testFiles,
 	}, nil
 }
 
@@ -134,7 +155,7 @@ func (s *Sandbox) Run() ([]*Output, error) {
 		return output, nil
 	}
 
-	runOutput, err := s.Execute("", "")
+	runOutput, err := s.Execute("", "", true)
 	if err != nil {
 		return output, err
 	}
@@ -145,13 +166,13 @@ func (s *Sandbox) Run() ([]*Output, error) {
 
 func (s *Sandbox) setupEnvironment() (*Output, error) {
 	if len(s.Language.BuildCmd) != 0 {
-		return s.Execute("", "")
+		return s.Execute("", "", false)
 	}
 
 	return &Output{}, nil
 }
 
-func (s *Sandbox) Execute(cmd, fileName string) (*Output, error) {
+func (s *Sandbox) Execute(cmd, fileName string, executeTests bool) (*Output, error) {
 	if len(cmd) == 0 {
 		if len(s.Language.BuildCmd) > 0 {
 			if len(fileName) > 0 && s.Language.Name == "java" && path.Ext(fileName) == s.Language.Ext {
@@ -196,9 +217,67 @@ func (s *Sandbox) Execute(cmd, fileName string) (*Output, error) {
 		respBody += scanner.Text() + "\n"
 	}
 
+	if executeTests {
+		testOutput, err := s.ExecuteTests()
+		if err != nil {
+			return &Output{
+				Error: true,
+				Body:  err.Error(),
+			}, nil
+		}
+
+		fmt.Println("TEST OUTPUT:", testOutput.Error, testOutput.Body, "TEST OUPUT END")
+	}
+
 	return &Output{
 		Error: false,
 		Body:  respBody,
+	}, nil
+}
+
+func (s *Sandbox) ExecuteTests() (*Output, error) {
+	if len(s.Language.TestCommand) > 0 {
+		idResponse, err := s.cli.ContainerExecCreate(s.ctx, s.ContainerID, types.ExecConfig{
+			Env:          s.Language.Env,
+			Cmd:          []string{"/bin/sh", "-c", s.Language.TestCommand},
+			Tty:          true,
+			AttachStderr: true,
+			AttachStdout: true,
+			AttachStdin:  true,
+			Detach:       true,
+		})
+
+		if err != nil {
+			return &Output{
+				Error: true,
+				Body:  err.Error(),
+			}, nil
+		}
+
+		hr, err := s.cli.ContainerExecAttach(s.ctx, idResponse.ID, types.ExecStartCheck{Detach: false, Tty: true})
+		if err != nil {
+			return &Output{
+				Error: true,
+				Body:  err.Error(),
+			}, nil
+		}
+		defer hr.Close()
+
+		scanner := bufio.NewScanner(hr.Conn)
+		respBody := ""
+		for scanner.Scan() {
+			respBody += scanner.Text() + "\n"
+		}
+
+		return &Output{
+			Error: false,
+			Body:  respBody,
+		}, nil
+	}
+
+	return &Output{
+		Error: true,
+		Body:  "tests are not supported for this language",
 	}, nil
 }
 

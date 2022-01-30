@@ -65,9 +65,23 @@ func main() {
 
 					testsPath := ctx.String("tests")
 					if testsPath != "" {
-						// TODO: Execute sandbox runner with tests.
+						testCode, err := file.ExtractCodeOfFile(testsPath)
+						if err != nil {
+							return fmt.Errorf("something went wrong while reading the file %s", testsPath)
+						}
+
+						s, output, err := sandbox.Run(sandboxLang, code, []string{testCode})
+						if err != nil {
+							return fmt.Errorf("something went wrong while executing sandbox runner %s", err)
+						}
+						defer s.Clean()
+
+						fmt.Println("\n=== BUILD OUTPUT ===")
+						fmt.Printf("Error: %s, Body: %s\n\n", strconv.FormatBool(output.BuildError), output.BuildBody)
+						fmt.Println("=== RUN OUTPUT ===")
+						fmt.Printf("Error: %s, Body: %s\n", strconv.FormatBool(output.RunError), output.RunBody)
 					} else {
-						s, output, err := sandbox.Run(sandboxLang, code)
+						s, output, err := sandbox.Run(sandboxLang, code, []string{})
 						if err != nil {
 							return fmt.Errorf("something went wrong while executing sandbox runner %s", err)
 						}
