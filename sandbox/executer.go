@@ -15,7 +15,7 @@ type runOutput struct {
 	RunError   bool   `json:"runError"`
 }
 
-func Run(language *Language, code string, tests []string) (*Sandbox, runOutput, error) {
+func Run(language *Language, code string, tests []SandboxTest) (*Sandbox, runOutput, error) {
 	c := make(chan os.Signal)
 
 	signal.Notify(c, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)

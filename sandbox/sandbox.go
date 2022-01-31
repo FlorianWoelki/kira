@@ -17,9 +17,9 @@ import (
 	"github.com/google/uuid"
 )
 
-type sandboxTest struct {
-	code     []byte
-	fileName string
+type SandboxTest struct {
+	Code     []byte
+	FileName string
 }
 
 type Sandbox struct {
@@ -31,7 +31,7 @@ type Sandbox struct {
 	ContainerID      string
 	SourceVolumePath string
 	fileName         string
-	tests            []sandboxTest
+	tests            []SandboxTest
 }
 
 type Output struct {
@@ -41,7 +41,7 @@ type Output struct {
 
 var hostVolumePath = path.Join(os.Getenv("APP_CONTAINER_PATH"), "volume")
 
-func NewSandbox(language string, code []byte, tests []string) (*Sandbox, error) {
+func NewSandbox(language string, code []byte, tests []SandboxTest) (*Sandbox, error) {
 	uid, err := uuid.NewUUID()
 	if err != nil {
 		return nil, err
@@ -80,17 +80,13 @@ func NewSandbox(language string, code []byte, tests []string) (*Sandbox, error) 
 		return nil, err
 	}
 
-	testFiles := make([]sandboxTest, 0)
 	if len(tests) != 0 {
-		for i, testCode := range tests {
-			testFileName := fmt.Sprintf("test%d_%s", i, lang.TestFileAppendix) + lang.Ext
-			testFilePath := path.Join(sourceVolumePath, testFileName)
-			err = ioutil.WriteFile(testFilePath, []byte(testCode), 0755)
+		for _, test := range tests {
+			testFilePath := path.Join(sourceVolumePath, test.FileName)
+			err = ioutil.WriteFile(testFilePath, test.Code, 0755)
 			if err != nil {
 				return nil, err
 			}
-
-			testFiles = append(testFiles, sandboxTest{code: []byte(testCode), fileName: testFileName})
 		}
 	}
 
@@ -102,7 +98,7 @@ func NewSandbox(language string, code []byte, tests []string) (*Sandbox, error) 
 		cli:              cli,
 		SourceVolumePath: sourceVolumePath,
 		fileName:         fileName,
-		tests:            testFiles,
+		tests:            tests,
 	}, nil
 }
 

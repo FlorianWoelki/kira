@@ -65,12 +65,26 @@ func main() {
 
 					testsPath := ctx.String("tests")
 					if testsPath != "" {
-						testCode, err := file.ExtractCodeOfFile(testsPath)
+						testFiles, err := os.ReadDir(testsPath)
 						if err != nil {
-							return fmt.Errorf("something went wrong while reading the file %s", testsPath)
+							return fmt.Errorf("something went wrong while reading the tests path %s", testsPath)
 						}
 
-						s, output, err := sandbox.Run(sandboxLang, code, []string{testCode})
+						sandboxTests := make([]sandbox.SandboxTest, 0)
+						for _, testFile := range testFiles {
+							if !strings.Contains(strings.ToLower(testFile.Name()), "test") {
+								continue
+							}
+
+							testCode, err := file.ExtractCodeOfFile(testsPath + testFile.Name())
+							if err != nil {
+								return fmt.Errorf("something went wrong while reading the file %s", testsPath+testFile.Name())
+							}
+
+							sandboxTests = append(sandboxTests, sandbox.SandboxTest{Code: []byte(testCode), FileName: testFile.Name()})
+						}
+
+						s, output, err := sandbox.Run(sandboxLang, code, sandboxTests)
 						if err != nil {
 							return fmt.Errorf("something went wrong while executing sandbox runner %s", err)
 						}
@@ -81,7 +95,7 @@ func main() {
 						fmt.Println("=== RUN OUTPUT ===")
 						fmt.Printf("Error: %s, Body: %s\n", strconv.FormatBool(output.RunError), output.RunBody)
 					} else {
-						s, output, err := sandbox.Run(sandboxLang, code, []string{})
+						s, output, err := sandbox.Run(sandboxLang, code, []sandbox.SandboxTest{})
 						if err != nil {
 							return fmt.Errorf("something went wrong while executing sandbox runner %s", err)
 						}
