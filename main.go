@@ -96,6 +96,8 @@ func main() {
 					fmt.Printf("Error: %s, Body: %s\n\n", strconv.FormatBool(output.BuildError), output.BuildBody)
 					fmt.Println("=== RUN OUTPUT ===")
 					fmt.Printf("Error: %s, Body: %s\n", strconv.FormatBool(output.RunError), output.RunBody)
+					fmt.Println("=== TEST OUTPUT ===")
+					fmt.Printf("Error: %s, Body: \n%s\n", strconv.FormatBool(output.TestError), output.TestBody)
 
 					return nil
 				},

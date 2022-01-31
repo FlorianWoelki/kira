@@ -35,8 +35,9 @@ type Sandbox struct {
 }
 
 type Output struct {
-	Error bool
-	Body  string
+	Error     bool
+	ExecBody  string
+	TestsBody string
 }
 
 var hostVolumePath = path.Join(os.Getenv("APP_CONTAINER_PATH"), "volume")
@@ -209,22 +210,31 @@ func (s *Sandbox) Execute(cmd, fileName string, executeTests bool) (*Output, err
 		}
 	}
 
-	respBody, err := s.ExecCmdInSandbox(cmd)
+	execOutput, err := s.ExecCmdInSandbox(cmd)
 	if err != nil {
 		return &Output{
-			Error: true,
-			Body:  err.Error(),
+			Error:     true,
+			ExecBody:  err.Error(),
+			TestsBody: "",
 		}, err
 	}
 
+	testBody := ""
 	if executeTests && len(s.Language.TestCommand) != 0 {
-		testBody, err := s.ExecCmdInSandbox(s.Language.TestCommand)
-		fmt.Println(testBody, err)
+		testBody, err = s.ExecCmdInSandbox(s.Language.TestCommand)
+		if err != nil {
+			return &Output{
+				Error:     true,
+				ExecBody:  "",
+				TestsBody: err.Error(),
+			}, nil
+		}
 	}
 
 	return &Output{
-		Error: false,
-		Body:  respBody,
+		Error:     false,
+		ExecBody:  execOutput,
+		TestsBody: testBody,
 	}, nil
 }
 

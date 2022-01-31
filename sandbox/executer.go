@@ -13,6 +13,8 @@ type runOutput struct {
 	BuildError bool   `json:"buildError"`
 	RunBody    string `json:"runBody"`
 	RunError   bool   `json:"runError"`
+	TestBody   string `json:"testBody"`
+	TestError  bool   `json:"testError"`
 }
 
 func Run(language *Language, code string, sandboxTests []SandboxTest) (*Sandbox, runOutput, error) {
@@ -63,9 +65,10 @@ func Run(language *Language, code string, sandboxTests []SandboxTest) (*Sandbox,
 
 	stopTicking <- true
 	return s, runOutput{
-		BuildBody:  output[0].Body,
+		BuildBody:  output[0].ExecBody,
 		BuildError: output[0].Error,
-		RunBody:    output[1].Body,
+		RunBody:    output[1].ExecBody,
 		RunError:   output[1].Error,
+		TestBody:   output[1].TestsBody,
 	}, nil
 }
