@@ -41,7 +41,7 @@ type Output struct {
 
 var hostVolumePath = path.Join(os.Getenv("APP_CONTAINER_PATH"), "volume")
 
-func NewSandbox(language string, code []byte, tests []SandboxTest) (*Sandbox, error) {
+func NewSandbox(language string, code []byte, sandboxTests []SandboxTest) (*Sandbox, error) {
 	uid, err := uuid.NewUUID()
 	if err != nil {
 		return nil, err
@@ -80,13 +80,11 @@ func NewSandbox(language string, code []byte, tests []SandboxTest) (*Sandbox, er
 		return nil, err
 	}
 
-	if len(tests) != 0 {
-		for _, test := range tests {
-			testFilePath := path.Join(sourceVolumePath, test.FileName)
-			err = ioutil.WriteFile(testFilePath, test.Code, 0755)
-			if err != nil {
-				return nil, err
-			}
+	for _, test := range sandboxTests {
+		testFilePath := path.Join(sourceVolumePath, test.FileName)
+		err = ioutil.WriteFile(testFilePath, test.Code, 0755)
+		if err != nil {
+			return nil, err
 		}
 	}
 
@@ -98,7 +96,7 @@ func NewSandbox(language string, code []byte, tests []SandboxTest) (*Sandbox, er
 		cli:              cli,
 		SourceVolumePath: sourceVolumePath,
 		fileName:         fileName,
-		tests:            tests,
+		tests:            sandboxTests,
 	}, nil
 }
 
@@ -168,6 +166,36 @@ func (s *Sandbox) setupEnvironment() (*Output, error) {
 	return &Output{}, nil
 }
 
+func (s *Sandbox) ExecCmdInSandbox(cmd string) (string, error) {
+	idResponse, err := s.cli.ContainerExecCreate(s.ctx, s.ContainerID, types.ExecConfig{
+		Env:          s.Language.Env,
+		Cmd:          []string{"/bin/sh", "-c", cmd},
+		Tty:          true,
+		AttachStderr: true,
+		AttachStdout: true,
+		AttachStdin:  true,
+		Detach:       true,
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	hr, err := s.cli.ContainerExecAttach(s.ctx, idResponse.ID, types.ExecStartCheck{Detach: false, Tty: true})
+	if err != nil {
+		return "", err
+	}
+	defer hr.Close()
+
+	scanner := bufio.NewScanner(hr.Conn)
+	respBody := ""
+	for scanner.Scan() {
+		respBody += scanner.Text() + "\n"
+	}
+
+	return respBody, nil
+}
+
 func (s *Sandbox) Execute(cmd, fileName string, executeTests bool) (*Output, error) {
 	if len(cmd) == 0 {
 		if len(s.Language.BuildCmd) > 0 {
@@ -181,99 +209,22 @@ func (s *Sandbox) Execute(cmd, fileName string, executeTests bool) (*Output, err
 		}
 	}
 
-	idResponse, err := s.cli.ContainerExecCreate(s.ctx, s.ContainerID, types.ExecConfig{
-		Env:          s.Language.Env,
-		Cmd:          []string{"/bin/sh", "-c", cmd},
-		Tty:          true,
-		AttachStderr: true,
-		AttachStdout: true,
-		AttachStdin:  true,
-		Detach:       true,
-	})
-
+	respBody, err := s.ExecCmdInSandbox(cmd)
 	if err != nil {
 		return &Output{
 			Error: true,
 			Body:  err.Error(),
-		}, nil
+		}, err
 	}
 
-	hr, err := s.cli.ContainerExecAttach(s.ctx, idResponse.ID, types.ExecStartCheck{Detach: false, Tty: true})
-	if err != nil {
-		return &Output{
-			Error: true,
-			Body:  err.Error(),
-		}, nil
-	}
-	defer hr.Close()
-
-	scanner := bufio.NewScanner(hr.Conn)
-	respBody := ""
-	for scanner.Scan() {
-		respBody += scanner.Text() + "\n"
-	}
-
-	if executeTests {
-		testOutput, err := s.ExecuteTests()
-		if err != nil {
-			return &Output{
-				Error: true,
-				Body:  err.Error(),
-			}, nil
-		}
-
-		fmt.Println("TEST OUTPUT:", testOutput.Error, testOutput.Body, "TEST OUPUT END")
+	if executeTests && len(s.Language.TestCommand) != 0 {
+		testBody, err := s.ExecCmdInSandbox(s.Language.TestCommand)
+		fmt.Println(testBody, err)
 	}
 
 	return &Output{
 		Error: false,
 		Body:  respBody,
-	}, nil
-}
-
-func (s *Sandbox) ExecuteTests() (*Output, error) {
-	if len(s.Language.TestCommand) > 0 {
-		idResponse, err := s.cli.ContainerExecCreate(s.ctx, s.ContainerID, types.ExecConfig{
-			Env:          s.Language.Env,
-			Cmd:          []string{"/bin/sh", "-c", s.Language.TestCommand},
-			Tty:          true,
-			AttachStderr: true,
-			AttachStdout: true,
-			AttachStdin:  true,
-			Detach:       true,
-		})
-
-		if err != nil {
-			return &Output{
-				Error: true,
-				Body:  err.Error(),
-			}, nil
-		}
-
-		hr, err := s.cli.ContainerExecAttach(s.ctx, idResponse.ID, types.ExecStartCheck{Detach: false, Tty: true})
-		if err != nil {
-			return &Output{
-				Error: true,
-				Body:  err.Error(),
-			}, nil
-		}
-		defer hr.Close()
-
-		scanner := bufio.NewScanner(hr.Conn)
-		respBody := ""
-		for scanner.Scan() {
-			respBody += scanner.Text() + "\n"
-		}
-
-		return &Output{
-			Error: false,
-			Body:  respBody,
-		}, nil
-	}
-
-	return &Output{
-		Error: true,
-		Body:  "tests are not supported for this language",
 	}, nil
 }
 
