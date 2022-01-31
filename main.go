@@ -64,13 +64,14 @@ func main() {
 					}
 
 					testsPath := ctx.String("tests")
+					sandboxTests := make([]sandbox.SandboxTest, 0)
+
 					if testsPath != "" {
 						testFiles, err := os.ReadDir(testsPath)
 						if err != nil {
 							return fmt.Errorf("something went wrong while reading the tests path %s", testsPath)
 						}
 
-						sandboxTests := make([]sandbox.SandboxTest, 0)
 						for _, testFile := range testFiles {
 							if !strings.Contains(strings.ToLower(testFile.Name()), "test") {
 								continue
@@ -83,29 +84,18 @@ func main() {
 
 							sandboxTests = append(sandboxTests, sandbox.SandboxTest{Code: []byte(testCode), FileName: testFile.Name()})
 						}
-
-						s, output, err := sandbox.Run(sandboxLang, code, sandboxTests)
-						if err != nil {
-							return fmt.Errorf("something went wrong while executing sandbox runner %s", err)
-						}
-						defer s.Clean()
-
-						fmt.Println("\n=== BUILD OUTPUT ===")
-						fmt.Printf("Error: %s, Body: %s\n\n", strconv.FormatBool(output.BuildError), output.BuildBody)
-						fmt.Println("=== RUN OUTPUT ===")
-						fmt.Printf("Error: %s, Body: %s\n", strconv.FormatBool(output.RunError), output.RunBody)
-					} else {
-						s, output, err := sandbox.Run(sandboxLang, code, []sandbox.SandboxTest{})
-						if err != nil {
-							return fmt.Errorf("something went wrong while executing sandbox runner %s", err)
-						}
-						defer s.Clean()
-
-						fmt.Println("\n=== BUILD OUTPUT ===")
-						fmt.Printf("Error: %s, Body: %s\n\n", strconv.FormatBool(output.BuildError), output.BuildBody)
-						fmt.Println("=== RUN OUTPUT ===")
-						fmt.Printf("Error: %s, Body: %s\n", strconv.FormatBool(output.RunError), output.RunBody)
 					}
+
+					s, output, err := sandbox.Run(sandboxLang, code, sandboxTests)
+					if err != nil {
+						return fmt.Errorf("something went wrong while executing sandbox runner %s", err)
+					}
+					defer s.Clean()
+
+					fmt.Println("\n=== BUILD OUTPUT ===")
+					fmt.Printf("Error: %s, Body: %s\n\n", strconv.FormatBool(output.BuildError), output.BuildBody)
+					fmt.Println("=== RUN OUTPUT ===")
+					fmt.Printf("Error: %s, Body: %s\n", strconv.FormatBool(output.RunError), output.RunBody)
 
 					return nil
 				},
