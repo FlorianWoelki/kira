@@ -101,13 +101,17 @@ func NewSandbox(language string, code []byte, sandboxTests []SandboxTest) (*Sand
 	}, nil
 }
 
-func (s *Sandbox) Run() ([]*Output, error) {
+type RunOutput struct {
+	SetupOutput *Output
+	RunOutput   *Output
+}
+
+func (s *Sandbox) Run() (RunOutput, error) {
 	workDir, err := os.Getwd()
 	if err != nil {
-		return nil, err
+		return RunOutput{}, err
 	}
 
-	output := make([]*Output, 0, 2)
 	var networkMode container.NetworkMode
 	createContainerResp, err := s.cli.ContainerCreate(s.ctx,
 		&container.Config{
@@ -131,21 +135,21 @@ func (s *Sandbox) Run() ([]*Output, error) {
 		}, nil, nil, s.UUID)
 
 	if err != nil {
-		return nil, err
+		return RunOutput{}, err
 	}
 
 	s.ContainerID = createContainerResp.ID
 
 	if err := s.cli.ContainerStart(s.ctx, s.ContainerID, types.ContainerStartOptions{}); err != nil {
-		return nil, err
+		return RunOutput{}, err
 	}
 
 	setupOutput, err := s.setupEnvironment()
 	if err != nil {
-		return output, err
+		return RunOutput{}, err
 	}
 
-	output = append(output, setupOutput)
+	output := RunOutput{SetupOutput: setupOutput}
 	if setupOutput.Error {
 		return output, nil
 	}
@@ -155,7 +159,7 @@ func (s *Sandbox) Run() ([]*Output, error) {
 		return output, err
 	}
 
-	output = append(output, runOutput)
+	output.RunOutput = runOutput
 	return output, nil
 }
 

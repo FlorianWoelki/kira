@@ -65,10 +65,10 @@ func Run(language *Language, code string, sandboxTests []SandboxTest) (*Sandbox,
 
 	stopTicking <- true
 	return s, runOutput{
-		BuildBody:  output[0].ExecBody,
-		BuildError: output[0].Error,
-		RunBody:    output[1].ExecBody,
-		RunError:   output[1].Error,
-		TestBody:   output[1].TestsBody,
+		BuildBody:  output.SetupOutput.ExecBody,
+		BuildError: output.SetupOutput.Error,
+		RunBody:    output.RunOutput.ExecBody,
+		RunError:   output.RunOutput.Error,
+		TestBody:   output.RunOutput.TestsBody,
 	}, nil
 }
