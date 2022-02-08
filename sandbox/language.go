@@ -25,6 +25,7 @@ var Languages = []Language{
 		DefaultFileName: "code.py",
 		MaxCPUs:         2,
 		MaxMemory:       128,
+		TestCommand:     "python3 -m unittest example_test",
 		ExampleCode:     `print("Hello World")`,
 	},
 	{
