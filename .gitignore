@@ -18,3 +18,4 @@
 # Generated files
 **/volume/*
 kira
+__pycache__
