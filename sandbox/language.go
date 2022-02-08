@@ -1,18 +1,17 @@
 package sandbox
 
 type Language struct {
-	Name             string
-	Ext              string
-	Image            string
-	BuildCmd         string
-	RunCmd           string
-	DefaultFileName  string
-	Env              []string
-	MaxCPUs          int64
-	MaxMemory        int64
-	TestCommand      string
-	TestFileAppendix string
-	ExampleCode      string
+	Name            string
+	Ext             string
+	Image           string
+	BuildCmd        string
+	RunCmd          string
+	DefaultFileName string
+	Env             []string
+	MaxCPUs         int64
+	MaxMemory       int64
+	TestCommand     string
+	ExampleCode     string
 }
 
 var Languages = []Language{
@@ -29,17 +28,16 @@ var Languages = []Language{
 		ExampleCode:     `print("Hello World")`,
 	},
 	{
-		Name:             "go",
-		Ext:              ".go",
-		Image:            "golang:1.17-alpine",
-		BuildCmd:         "rm -rf go.mod && go mod init kira && go build -v .",
-		RunCmd:           "./kira",
-		Env:              []string{"GOPROXY=https://goproxy.io,direct"},
-		DefaultFileName:  "code.go",
-		MaxCPUs:          2,
-		MaxMemory:        128,
-		TestCommand:      "go test -v ./...",
-		TestFileAppendix: "_test",
+		Name:            "go",
+		Ext:             ".go",
+		Image:           "golang:1.17-alpine",
+		BuildCmd:        "rm -rf go.mod && go mod init kira && go build -v .",
+		RunCmd:          "./kira",
+		Env:             []string{"GOPROXY=https://goproxy.io,direct"},
+		DefaultFileName: "code.go",
+		MaxCPUs:         2,
+		MaxMemory:       128,
+		TestCommand:     "go test -v ./...",
 		ExampleCode: `package main
 
 import "fmt"
