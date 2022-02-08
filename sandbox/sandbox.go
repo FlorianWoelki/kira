@@ -74,7 +74,7 @@ func NewSandbox(language string, code []byte, sandboxTests []SandboxTest) (*Sand
 		return nil, err
 	}
 
-	fileName := "code" + lang.Ext
+	fileName := "app" + lang.Ext
 	filePath := path.Join(sourceVolumePath, fileName)
 	err = ioutil.WriteFile(filePath, code, 0755)
 	if err != nil {
@@ -205,7 +205,7 @@ func (s *Sandbox) Execute(cmd, fileName string, executeTests bool) (*Output, err
 	if len(cmd) == 0 {
 		if len(s.Language.BuildCmd) > 0 {
 			if len(fileName) > 0 && s.Language.Name == "java" && path.Ext(fileName) == s.Language.Ext {
-				cmd = strings.ReplaceAll(s.Language.BuildCmd, s.Language.DefaultFileName, fileName) + " && " + strings.ReplaceAll(s.Language.RunCmd, "code", strings.ReplaceAll(fileName, s.Language.Ext, ""))
+				cmd = strings.ReplaceAll(s.Language.BuildCmd, s.Language.DefaultFileName, fileName) + " && " + strings.ReplaceAll(s.Language.RunCmd, "app", strings.ReplaceAll(fileName, s.Language.Ext, ""))
 			} else {
 				cmd = s.Language.BuildCmd + " && " + s.Language.RunCmd
 			}
