@@ -115,6 +115,7 @@ int main()
 		DefaultFileName: "app.jl",
 		MaxCPUs:         2,
 		MaxMemory:       128,
+		TestCommand:     "julia exampleTest.jl",
 		ExampleCode:     `print("Hello World")`,
 	},
 	{
