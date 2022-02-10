@@ -81,13 +81,22 @@ func NewSandbox(language string, code []byte, sandboxTests []SandboxTest) (*Sand
 		return nil, err
 	}
 
-	for _, test := range sandboxTests {
+	testCommandAppendix := ""
+	for i, test := range sandboxTests {
 		testFilePath := path.Join(sourceVolumePath, test.FileName)
 		err = ioutil.WriteFile(testFilePath, test.Code, 0755)
 		if err != nil {
 			return nil, err
 		}
+
+		testCommandAppendix += test.FileName
+		if i != len(sandboxTests)-1 {
+			testCommandAppendix += " "
+		}
 	}
+
+	lang.TestCommand = strings.Replace(lang.TestCommand, "{}", testCommandAppendix, 1)
+	lang.TestCommand = strings.Replace(lang.TestCommand, "{}", fileName, 1)
 
 	return &Sandbox{
 		ctx:              ctx,
@@ -225,17 +234,6 @@ func (s *Sandbox) Execute(cmd, fileName string, executeTests bool) (*Output, err
 
 	testBody := ""
 	if executeTests && len(s.Language.TestCommand) != 0 {
-		testCommandAppendix := ""
-		for i, test := range s.tests {
-			testCommandAppendix += test.FileName
-			if i != len(s.tests)-1 {
-				testCommandAppendix += " "
-			}
-		}
-
-		s.Language.TestCommand = strings.Replace(s.Language.TestCommand, "{}", testCommandAppendix, 1)
-		s.Language.TestCommand = strings.Replace(s.Language.TestCommand, "{}", s.fileName, 1)
-
 		testBody, err = s.ExecCmdInSandbox(s.Language.TestCommand)
 		if err != nil {
 			return &Output{
