@@ -38,7 +38,7 @@ var Languages = []Language{
 		DefaultFileName: "app.go",
 		MaxCPUs:         2,
 		MaxMemory:       128,
-		TestCommand:     "go test -v ./...",
+		TestCommand:     "go test -v {} {}",
 		ExampleCode: `package main
 
 import "fmt"
@@ -115,7 +115,7 @@ int main()
 		DefaultFileName: "app.jl",
 		MaxCPUs:         2,
 		MaxMemory:       128,
-		TestCommand:     "julia exampleTest.jl",
+		TestCommand:     "julia",
 		ExampleCode:     `print("Hello World")`,
 	},
 	{

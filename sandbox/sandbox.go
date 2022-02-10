@@ -225,6 +225,17 @@ func (s *Sandbox) Execute(cmd, fileName string, executeTests bool) (*Output, err
 
 	testBody := ""
 	if executeTests && len(s.Language.TestCommand) != 0 {
+		testCommandAppendix := ""
+		for i, test := range s.tests {
+			testCommandAppendix += test.FileName
+			if i != len(s.tests)-1 {
+				testCommandAppendix += " "
+			}
+		}
+
+		s.Language.TestCommand = strings.Replace(s.Language.TestCommand, "{}", testCommandAppendix, 1)
+		s.Language.TestCommand = strings.Replace(s.Language.TestCommand, "{}", s.fileName, 1)
+
 		testBody, err = s.ExecCmdInSandbox(s.Language.TestCommand)
 		if err != nil {
 			return &Output{
