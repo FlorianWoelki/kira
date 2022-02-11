@@ -49,7 +49,8 @@ The following section contains all the commands and flags that can be used while
   | Flag | Aliases | Description | Default |
   |---|---|---|---|
   | --language | -l, -lang | Set the language for the kira sandbox runner. | python |
-  | --file | -f | Set the specific file that should be executed. | example code in runner struct |
+  | --main | -m | Set the main file that should be executed first. | example code in runner struct |
+  | --dir | -d | Set the specific directory that should be executed. | example code in runner struct |
 </details>
 
 ### REST API endpoints

@@ -105,44 +105,6 @@ func main() {
 					fmt.Printf("Error: %s, Body: \n%s\n", strconv.FormatBool(output.TestError), output.TestBody)
 
 					return nil
-
-					/*testsPath := ctx.String("tests")
-					sandboxTests := make([]sandbox.SandboxTest, 0)
-
-					if testsPath != "" {
-						testFiles, err := os.ReadDir(testsPath)
-						if err != nil {
-							return fmt.Errorf("something went wrong while reading the tests path %s", testsPath)
-						}
-
-						for _, testFile := range testFiles {
-							if !strings.Contains(strings.ToLower(testFile.Name()), "test") {
-								continue
-							}
-
-							testCode, err := file.ExtractCodeOfFile(testsPath + testFile.Name())
-							if err != nil {
-								return fmt.Errorf("something went wrong while reading the file %s", testsPath+testFile.Name())
-							}
-
-							sandboxTests = append(sandboxTests, sandbox.SandboxTest{Code: []byte(testCode), FileName: testFile.Name()})
-						}
-					}
-
-					s, output, err := sandbox.Run(sandboxLang, code, sandboxTests)
-					if err != nil {
-						return fmt.Errorf("something went wrong while executing sandbox runner %s", err)
-					}
-					defer s.Clean()
-
-					fmt.Println("\n=== BUILD OUTPUT ===")
-					fmt.Printf("Error: %s, Body: %s\n\n", strconv.FormatBool(output.BuildError), output.BuildBody)
-					fmt.Println("=== RUN OUTPUT ===")
-					fmt.Printf("Error: %s, Body: %s\n", strconv.FormatBool(output.RunError), output.RunBody)
-					fmt.Println("=== TEST OUTPUT ===")
-					fmt.Printf("Error: %s, Body: \n%s\n", strconv.FormatBool(output.TestError), output.TestBody)
-
-					return nil*/
 				},
 			},
 		},
