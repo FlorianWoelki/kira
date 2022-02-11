@@ -28,18 +28,18 @@ func main() {
 						Usage:   "set the language for the kira sandbox runner.",
 					},
 					&cli.StringFlag{
-						Name:        "file",
-						Aliases:     []string{"f"},
+						Name:        "main",
+						Aliases:     []string{"m"},
 						Value:       "",
-						DefaultText: "execute an example code.",
-						Usage:       "set the specific file that should be executed.",
+						DefaultText: "default main file from example code.",
+						Usage:       "set the specific main file for executing first.",
 					},
 					&cli.StringFlag{
-						Name:        "tests",
-						Aliases:     []string{"t"},
+						Name:        "dir",
+						Aliases:     []string{"d"},
 						Value:       "",
-						DefaultText: "execute based on tests.",
-						Usage:       "set the specific path of tests that are being executed and checked on.",
+						DefaultText: "copies all the example code.",
+						Usage:       "set the specific directory that should be copied and executed from.",
 					},
 				},
 				Action: func(ctx *cli.Context) error {
@@ -57,13 +57,56 @@ func main() {
 						return fmt.Errorf("no language found with name %s", language)
 					}
 
-					filePath := ctx.String("file")
-					code, err := file.ExtractCodeOfFile(filePath)
+					mainFilePath := ctx.String("main")
+					mainCode, err := file.ExtractCodeOfFile(mainFilePath)
 					if err != nil {
-						return fmt.Errorf("something went wrong while reading the file %s", filePath)
+						return fmt.Errorf("something went wrong while reading the main file path %s", mainFilePath)
 					}
 
-					testsPath := ctx.String("tests")
+					dirPath := ctx.String("dir")
+					sandboxTests := make([]sandbox.SandboxFile, 0)
+					files := make([]sandbox.SandboxFile, 0)
+
+					if dirPath != "" {
+						dirFiles, err := os.ReadDir(dirPath)
+						if err != nil {
+							return fmt.Errorf("something went wrong while reading the dir path %s", dirPath)
+						}
+
+						for _, dirFile := range dirFiles {
+							if dirPath+dirFile.Name() == mainFilePath {
+								continue
+							}
+
+							fileCode, err := file.ExtractCodeOfFile(dirPath + dirFile.Name())
+							if err != nil {
+								return fmt.Errorf("something went wrong while reading the file %s", dirPath+dirFile.Name())
+							}
+
+							if strings.Contains(strings.ToLower(dirFile.Name()), "test") {
+								sandboxTests = append(sandboxTests, sandbox.SandboxFile{Code: []byte(fileCode), FileName: dirFile.Name()})
+							} else {
+								files = append(files, sandbox.SandboxFile{Code: []byte(fileCode), FileName: dirFile.Name()})
+							}
+						}
+					}
+
+					s, output, err := sandbox.Run(sandboxLang, mainCode, files, sandboxTests)
+					if err != nil {
+						return fmt.Errorf("something went wrong while executing sandbox runner %s", err)
+					}
+					defer s.Clean()
+
+					fmt.Println("\n=== BUILD OUTPUT ===")
+					fmt.Printf("Error: %s, Body: %s\n\n", strconv.FormatBool(output.BuildError), output.BuildBody)
+					fmt.Println("=== RUN OUTPUT ===")
+					fmt.Printf("Error: %s, Body: %s\n", strconv.FormatBool(output.RunError), output.RunBody)
+					fmt.Println("=== TEST OUTPUT ===")
+					fmt.Printf("Error: %s, Body: \n%s\n", strconv.FormatBool(output.TestError), output.TestBody)
+
+					return nil
+
+					/*testsPath := ctx.String("tests")
 					sandboxTests := make([]sandbox.SandboxTest, 0)
 
 					if testsPath != "" {
@@ -99,7 +142,7 @@ func main() {
 					fmt.Println("=== TEST OUTPUT ===")
 					fmt.Printf("Error: %s, Body: \n%s\n", strconv.FormatBool(output.TestError), output.TestBody)
 
-					return nil
+					return nil*/
 				},
 			},
 		},

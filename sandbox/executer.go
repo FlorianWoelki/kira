@@ -17,7 +17,7 @@ type runOutput struct {
 	TestError  bool   `json:"testError"`
 }
 
-func Run(language *Language, code string, sandboxTests []SandboxTest) (*Sandbox, runOutput, error) {
+func Run(language *Language, mainCode string, files []SandboxFile, sandboxTests []SandboxFile) (*Sandbox, runOutput, error) {
 	c := make(chan os.Signal)
 
 	signal.Notify(c, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
@@ -31,11 +31,11 @@ func Run(language *Language, code string, sandboxTests []SandboxTest) (*Sandbox,
 		}
 	}()
 
-	if code == "" {
-		code = language.ExampleCode
+	if mainCode == "" {
+		mainCode = language.ExampleCode
 	}
 
-	s, err := NewSandbox(language.Name, []byte(code), sandboxTests)
+	s, err := NewSandbox(language.Name, []byte(mainCode), files, sandboxTests)
 	if err != nil {
 		return &Sandbox{}, runOutput{}, err
 	}
