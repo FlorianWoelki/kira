@@ -103,6 +103,7 @@ int main()
 		DefaultFileName: "app.ts",
 		MaxCPUs:         2,
 		MaxMemory:       128,
+		TestCommand:     "jest",
 		ExampleCode:     `console.log("Hello World");`,
 	},
 	{

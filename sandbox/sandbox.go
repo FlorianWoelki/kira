@@ -14,6 +14,7 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
+	"github.com/florianwoelki/kira/file"
 	"github.com/google/uuid"
 )
 
@@ -97,6 +98,17 @@ func NewSandbox(language string, code []byte, sandboxTests []SandboxTest) (*Sand
 
 	lang.TestCommand = strings.Replace(lang.TestCommand, "{}", testCommandAppendix, 1)
 	lang.TestCommand = strings.Replace(lang.TestCommand, "{}", fileName, 1)
+
+	jest := "jest.config.js"
+	jestPath := path.Join(sourceVolumePath, jest)
+	jestCode, err := file.ExtractCodeOfFile(jestPath)
+	if err != nil {
+		fmt.Errorf("something went wrong while reading the file %s", jestPath)
+	}
+	err = ioutil.WriteFile(jestPath, []byte(jestCode), 0755)
+	if err != nil {
+		return nil, err
+	}
 
 	return &Sandbox{
 		ctx:              ctx,
@@ -263,8 +275,8 @@ func (s *Sandbox) Clean() {
 		fmt.Printf("Failed to remove container: %v", err)
 	}
 
-	err := os.RemoveAll(s.SourceVolumePath)
+	/*err := os.RemoveAll(s.SourceVolumePath)
 	if err != nil {
 		fmt.Printf("Failed to remove volume folder: %v", err)
-	}
+	}*/
 }
