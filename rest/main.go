@@ -44,7 +44,7 @@ func execute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s, output, err := sandbox.Run(lang, eb.Content, []sandbox.SandboxTest{})
+	s, output, err := sandbox.Run(lang, eb.Content, []sandbox.SandboxFile{}, []sandbox.SandboxFile{})
 	if err != nil {
 		log.Fatalf("error while executing sandbox runner: %s", err)
 		http.Error(w, "Error trying to execute sandbox runner", http.StatusInternalServerError)
