@@ -103,8 +103,12 @@ func NewSandbox(language string, mainCode []byte, files []SandboxFile, sandboxTe
 		}
 	}
 
-	lang.TestCommand = strings.Replace(lang.TestCommand, "{}", testCommandAppendix, 1)
-	lang.TestCommand = strings.Replace(lang.TestCommand, "{}", fileName, 1)
+	if len(sandboxTests) != 0 {
+		lang.TestCommand = strings.Replace(lang.TestCommand, "{}", testCommandAppendix, 1)
+		lang.TestCommand = strings.Replace(lang.TestCommand, "{}", fileName, 1)
+	} else {
+		lang.TestCommand = ""
+	}
 
 	return &Sandbox{
 		ctx:              ctx,
