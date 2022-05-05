@@ -1,8 +1,18 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { MonacoEditor } from './Editor';
+
+interface CodeExecutionResult {
+  buildBody: string;
+  buildError: boolean;
+  runBody: string;
+  runError: boolean;
+  testBody: string;
+  testError: boolean;
+}
 
 const App: React.FC = (): JSX.Element => {
   const codeEditorRef = useRef<any>(null);
+  const [codeResult, setCodeResult] = useState<string>('');
 
   const runCode = async (): Promise<void> => {
     const result = await fetch('http://localhost:9090/execute', {
@@ -13,7 +23,15 @@ const App: React.FC = (): JSX.Element => {
       }),
     });
 
-    const jsonResult = await result.json();
+    const jsonResult: CodeExecutionResult = await result.json();
+    if (jsonResult.buildError) {
+      setCodeResult(`Build error: ${jsonResult.buildBody}`);
+    } else if (jsonResult.runError) {
+      setCodeResult(`Run error: ${jsonResult.runBody}`);
+    } else {
+      setCodeResult(`${jsonResult.runBody}`);
+    }
+
     console.log(jsonResult);
   };
 
@@ -23,6 +41,10 @@ const App: React.FC = (): JSX.Element => {
         value="print('Hello World')"
         ref={codeEditorRef}
       ></MonacoEditor>
+
+      <div className="absolute left-0 bottom-0 px-4 py-2 mb-4 ml-4 bg-gray-200 rounded">
+        <p>Output: {codeResult.length === 0 ? '/' : codeResult}</p>
+      </div>
 
       <button
         className="absolute right-0 bottom-0 px-4 py-2 bg-green-600 rounded text-white mb-4 mr-4 transition duration-100 ease-in-out hover:bg-green-500"
