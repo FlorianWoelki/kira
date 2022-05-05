@@ -39,7 +39,7 @@ const createEditor = (
     wordBasedSuggestions: false,
     wordWrap: 'bounded',
     wordWrapColumn: 80,
-    occurrencesHighlight: false,
+    occurrencesHighlight: true,
     renderLineHighlight: 'none',
     hideCursorInOverviewRuler: true,
     overviewRulerBorder: false,
