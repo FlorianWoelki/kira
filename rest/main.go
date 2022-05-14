@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/florianwoelki/kira/sandbox"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -59,8 +60,6 @@ func execute(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Add("Content-Type", "application/json")
-	// TODO: Change in production
-	w.Header().Add("Access-Control-Allow-Origin", "*")
 	w.WriteHeader(http.StatusAccepted)
 	w.Write(response)
 
@@ -77,9 +76,13 @@ func main() {
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/execute", execute).Methods(http.MethodPost)
 
+	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With"})
+	originsOk := handlers.AllowedOrigins([]string{"http://localhost:3000"}) // TODO: Change to env variable
+	methodsOk := handlers.AllowedMethods([]string{"GET", "POST", "PUT"})
+
 	server := http.Server{
 		Addr:         address,
-		Handler:      router,
+		Handler:      handlers.CORS(originsOk, headersOk, methodsOk)(router),
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  120 * time.Second,
