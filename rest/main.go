@@ -74,6 +74,8 @@ func execute(w http.ResponseWriter, r *http.Request) {
 	}()
 }
 
+// loadOrigins will load all the origins from a specific string.
+// It splits the string by comma and returns the origins.
 func loadOrigins(str string) []string {
 	result := strings.Split(str, ",")
 	for i := 0; i < len(result); i++ {
