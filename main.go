@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/florianwoelki/kira/file"
 	"github.com/florianwoelki/kira/sandbox"
@@ -130,11 +131,11 @@ func main() {
 						}
 					}
 
+					start := time.Now()
 					s, output, err := sandbox.Run(sandboxLang, mainCode, files, sandboxTests)
 					if err != nil {
 						return fmt.Errorf("something went wrong while executing sandbox runner %s", err)
 					}
-					defer s.Clean()
 
 					fmt.Println("\n=== BUILD OUTPUT ===")
 					fmt.Printf("Error: %s, Body: %s\n\n", strconv.FormatBool(output.BuildError), output.BuildBody)
@@ -142,6 +143,14 @@ func main() {
 					fmt.Printf("Error: %s, Body: %s\n", strconv.FormatBool(output.RunError), output.RunBody)
 					fmt.Println("=== TEST OUTPUT ===")
 					fmt.Printf("Error: %s, Body: \n%s\n", strconv.FormatBool(output.TestError), output.TestBody)
+
+					duration := time.Since(start)
+					fmt.Printf("duration before clean=%s\n", duration)
+
+					s.Clean()
+
+					duration = time.Since(start)
+					fmt.Printf("duration after clean=%s\n", duration)
 
 					return nil
 				},
