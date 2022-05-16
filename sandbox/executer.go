@@ -52,7 +52,7 @@ func Run(language *Language, mainCode string, files []SandboxFile, sandboxTests 
 				h, _ := time.ParseDuration("30s")
 				expireTime := s.LastTimestamp.Add(h)
 				if expireTime.Before(time.Now()) {
-					s.Clean()
+					s.forceQuit = true
 				}
 			}
 		}
@@ -64,6 +64,12 @@ func Run(language *Language, mainCode string, files []SandboxFile, sandboxTests 
 	}
 
 	stopTicking <- true
+
+	if s.forceQuit {
+		output.RunOutput.ExecBody = "Could not execute code. Force Quit."
+		output.RunOutput.Error = true
+	}
+
 	return s, runOutput{
 		BuildBody:  output.SetupOutput.ExecBody,
 		BuildError: output.SetupOutput.Error,

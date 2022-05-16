@@ -32,6 +32,7 @@ type Sandbox struct {
 	SourceVolumePath string
 	fileName         string
 	tests            []SandboxFile
+	forceQuit        bool
 }
 
 type Output struct {
@@ -217,6 +218,10 @@ func (s *Sandbox) ExecCmdInSandbox(cmd string) (string, error) {
 	respBody := ""
 	for scanner.Scan() {
 		respBody += scanner.Text() + "\n"
+
+		if s.forceQuit {
+			break
+		}
 	}
 
 	return respBody, nil
@@ -275,8 +280,8 @@ func (s *Sandbox) Clean() {
 		fmt.Printf("Failed to remove container: %v", err)
 	}
 
-	/*err := os.RemoveAll(s.SourceVolumePath)
+	err := os.RemoveAll(s.SourceVolumePath)
 	if err != nil {
 		fmt.Printf("Failed to remove volume folder: %v", err)
-	}*/
+	}
 }
