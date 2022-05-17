@@ -19,8 +19,8 @@ const (
 	Endpoint    = "http://localhost:9090/execute"
 	ContentType = "application/json"
 
-	TotalIterationCount       = 1
-	CycleStartingRequestCount = 40
+	TotalIterationCount       = 4
+	CycleStartingRequestCount = 20
 	MaxIncreaseCoefficient    = 4
 )
 
