@@ -104,8 +104,8 @@ func main() {
 		Addr:         address,
 		Handler:      handlers.CORS(originsOk, headersOk, methodsOk)(router),
 		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
-		IdleTimeout:  120 * time.Second,
+		WriteTimeout: 0,
+		IdleTimeout:  0,
 	}
 
 	go func() {
