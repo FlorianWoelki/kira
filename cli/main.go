@@ -58,13 +58,13 @@ func main() {
 						return fmt.Errorf("no language found with name %s", language)
 					}
 
-					mainFilePath := ctx.String("main")
+					mainFilePath := "../" + ctx.String("main")
 					mainCode, err := file.ExtractCodeOfFile(mainFilePath)
 					if err != nil {
 						return fmt.Errorf("something went wrong while reading the main file path %s", mainFilePath)
 					}
 
-					dirPath := ctx.String("dir")
+					dirPath := "../" + ctx.String("dir")
 					sandboxTests := make([]sandbox.SandboxFile, 0)
 					files := make([]sandbox.SandboxFile, 0)
 
