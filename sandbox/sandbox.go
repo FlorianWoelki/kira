@@ -150,10 +150,6 @@ func (s *Sandbox) Run() (RunOutput, error) {
 					Target: "/runtime",
 				},
 			},
-			Resources: container.Resources{
-				NanoCPUs: s.Language.MaxCPUs * 1000000000,
-				Memory:   s.Language.MaxMemory * 1024 * 1024,
-			},
 		}, nil, nil, s.UUID)
 
 	if err != nil {
