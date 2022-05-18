@@ -8,8 +8,6 @@ type Language struct {
 	RunCmd          string
 	DefaultFileName string
 	Env             []string
-	MaxCPUs         int64
-	MaxMemory       int64
 	TestCommand     string
 	ExampleCode     string
 }
@@ -18,13 +16,11 @@ var Languages = []Language{
 	{
 		Name:            "python",
 		Ext:             ".py",
-		Image:           "python:3.9.1-alpine",
+		Image:           "all-in-one-ubuntu",
 		BuildCmd:        "",
 		RunCmd:          "python3 app.py",
 		Env:             []string{},
 		DefaultFileName: "app.py",
-		MaxCPUs:         2,
-		MaxMemory:       128,
 		TestCommand:     "python3 -m unittest example_test",
 		ExampleCode:     `print("Hello World")`,
 	},
@@ -36,8 +32,6 @@ var Languages = []Language{
 		RunCmd:          "./kira",
 		Env:             []string{"GOPROXY=https://goproxy.io,direct"},
 		DefaultFileName: "app.go",
-		MaxCPUs:         2,
-		MaxMemory:       128,
 		TestCommand:     "go test -v {} {}",
 		ExampleCode: `package main
 
@@ -55,8 +49,6 @@ func main() {
 		RunCmd:          "./app",
 		Env:             []string{},
 		DefaultFileName: "app.c",
-		MaxCPUs:         2,
-		MaxMemory:       128,
 		ExampleCode: `#include <stdio.h>
 
 int main()
@@ -73,8 +65,6 @@ int main()
 		RunCmd:          "java app",
 		Env:             []string{},
 		DefaultFileName: "app.java",
-		MaxCPUs:         2,
-		MaxMemory:       128,
 		ExampleCode: `class code {
 	public static void main(String[] args) {
 		System.out.println("Hello World");
@@ -89,8 +79,6 @@ int main()
 		RunCmd:          "node app.js",
 		Env:             []string{},
 		DefaultFileName: "app.js",
-		MaxCPUs:         2,
-		MaxMemory:       128,
 		ExampleCode:     `console.log("Hello World");`,
 	},
 	{
@@ -101,8 +89,6 @@ int main()
 		RunCmd:          "node app.js",
 		Env:             []string{},
 		DefaultFileName: "app.ts",
-		MaxCPUs:         2,
-		MaxMemory:       128,
 		TestCommand:     "jest",
 		ExampleCode:     `console.log("Hello World");`,
 	},
@@ -114,8 +100,6 @@ int main()
 		RunCmd:          "julia app.jl",
 		Env:             []string{},
 		DefaultFileName: "app.jl",
-		MaxCPUs:         2,
-		MaxMemory:       128,
 		TestCommand:     "julia",
 		ExampleCode:     `print("Hello World")`,
 	},
@@ -127,8 +111,6 @@ int main()
 		RunCmd:          "./app",
 		Env:             []string{},
 		DefaultFileName: "app.cpp",
-		MaxCPUs:         2,
-		MaxMemory:       128,
 		ExampleCode: `#include <iostream>
 
 int main()
@@ -145,8 +127,6 @@ int main()
 		RunCmd:          "elixir app.exs",
 		Env:             []string{},
 		DefaultFileName: "app.exs",
-		MaxCPUs:         2,
-		MaxMemory:       128,
 		ExampleCode:     `IO.puts "Hello World"`,
 	},
 	{
@@ -157,8 +137,6 @@ int main()
 		RunCmd:          "swift -module-cache-path . app.swift",
 		Env:             []string{},
 		DefaultFileName: "app.swift",
-		MaxCPUs:         2,
-		MaxMemory:       128,
 		ExampleCode:     `print("Hello World")`,
 	},
 }
