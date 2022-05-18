@@ -3,7 +3,6 @@ package sandbox
 type Language struct {
 	Name            string
 	Ext             string
-	Image           string
 	BuildCmd        string
 	RunCmd          string
 	DefaultFileName string
@@ -16,7 +15,6 @@ var Languages = []Language{
 	{
 		Name:            "python",
 		Ext:             ".py",
-		Image:           "all-in-one-ubuntu",
 		BuildCmd:        "",
 		RunCmd:          "python3 app.py",
 		Env:             []string{},
@@ -27,7 +25,6 @@ var Languages = []Language{
 	{
 		Name:            "go",
 		Ext:             ".go",
-		Image:           "golang:1.17-alpine",
 		BuildCmd:        "rm -rf go.mod && go mod init kira && go build -v .",
 		RunCmd:          "./kira",
 		Env:             []string{"GOPROXY=https://goproxy.io,direct"},
@@ -44,7 +41,6 @@ func main() {
 	{
 		Name:            "c",
 		Ext:             ".c",
-		Image:           "gcc:latest",
 		BuildCmd:        "gcc -v app.c -o app",
 		RunCmd:          "./app",
 		Env:             []string{},
@@ -60,7 +56,6 @@ int main()
 	{
 		Name:            "java",
 		Ext:             ".java",
-		Image:           "openjdk:8u232-jdk",
 		BuildCmd:        "javac app.java",
 		RunCmd:          "java app",
 		Env:             []string{},
@@ -74,7 +69,6 @@ int main()
 	{
 		Name:            "javascript",
 		Ext:             ".js",
-		Image:           "node:lts-alpine",
 		BuildCmd:        "",
 		RunCmd:          "node app.js",
 		Env:             []string{},
@@ -84,7 +78,6 @@ int main()
 	{
 		Name:            "cpp",
 		Ext:             ".cpp",
-		Image:           "gcc:latest",
 		BuildCmd:        "gcc -v app.cpp -lstdc++ -o app",
 		RunCmd:          "./app",
 		Env:             []string{},

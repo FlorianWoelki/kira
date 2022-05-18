@@ -137,7 +137,7 @@ func (s *Sandbox) Run() (RunOutput, error) {
 	var networkMode container.NetworkMode
 	createContainerResp, err := s.cli.ContainerCreate(s.ctx,
 		&container.Config{
-			Image:      s.Language.Image,
+			Image:      "all-in-one-ubuntu",
 			Tty:        true,
 			WorkingDir: "/runtime",
 		},
