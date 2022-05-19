@@ -10,10 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
+	"github.com/florianwoelki/kira/internal"
 	"github.com/google/uuid"
 )
 
@@ -23,11 +21,11 @@ type SandboxFile struct {
 }
 
 type Sandbox struct {
+	containerPort    *internal.ContainerPort
 	ctx              context.Context
 	UUID             string
 	Language         *Language
 	LastTimestamp    time.Time
-	cli              *client.Client
 	ContainerID      string
 	SourceVolumePath string
 	fileName         string
@@ -116,10 +114,10 @@ func NewSandbox(language string, mainCode []byte, files []SandboxFile, sandboxTe
 		UUID:             uid.String(),
 		Language:         lang,
 		LastTimestamp:    time.Now(),
-		cli:              cli,
 		SourceVolumePath: sourceVolumePath,
 		fileName:         fileName,
 		tests:            sandboxTests,
+		containerPort:    internal.NewContainerPort(cli),
 	}, nil
 }
 
@@ -129,36 +127,15 @@ type RunOutput struct {
 }
 
 func (s *Sandbox) Run() (RunOutput, error) {
-	workDir, err := os.Getwd()
-	if err != nil {
-		return RunOutput{}, err
-	}
-
-	var networkMode container.NetworkMode
-	createContainerResp, err := s.cli.ContainerCreate(s.ctx,
-		&container.Config{
-			Image:      "all-in-one-ubuntu",
-			Tty:        true,
-			WorkingDir: "/runtime",
-		},
-		&container.HostConfig{
-			NetworkMode: networkMode,
-			Mounts: []mount.Mount{
-				{
-					Type:   mount.TypeBind,
-					Source: workDir + "/" + s.SourceVolumePath,
-					Target: "/runtime",
-				},
-			},
-		}, nil, nil, s.UUID)
+	id, err := s.containerPort.CreateContainer(s.ctx, s.UUID, s.SourceVolumePath)
 
 	if err != nil {
 		return RunOutput{}, err
 	}
 
-	s.ContainerID = createContainerResp.ID
+	s.ContainerID = id
 
-	if err := s.cli.ContainerStart(s.ctx, s.ContainerID, types.ContainerStartOptions{}); err != nil {
+	if err := s.containerPort.StartContainer(s.ctx, s.ContainerID); err != nil {
 		return RunOutput{}, err
 	}
 
@@ -190,21 +167,7 @@ func (s *Sandbox) setupEnvironment() (*Output, error) {
 }
 
 func (s *Sandbox) ExecCmdInSandbox(cmd string) (string, error) {
-	idResponse, err := s.cli.ContainerExecCreate(s.ctx, s.ContainerID, types.ExecConfig{
-		Env:          s.Language.Env,
-		Cmd:          []string{"/bin/sh", "-c", cmd},
-		Tty:          true,
-		AttachStderr: true,
-		AttachStdout: true,
-		AttachStdin:  true,
-		Detach:       true,
-	})
-
-	if err != nil {
-		return "", err
-	}
-
-	hr, err := s.cli.ContainerExecAttach(s.ctx, idResponse.ID, types.ExecStartCheck{Detach: false, Tty: true})
+	hr, err := s.containerPort.ExecuteCommand(s.ctx, s.ContainerID, cmd, s.Language.Env)
 	if err != nil {
 		return "", err
 	}
@@ -265,15 +228,8 @@ func (s *Sandbox) Execute(cmd, fileName string, executeTests bool) (*Output, err
 }
 
 func (s *Sandbox) Clean() {
-	if err := s.cli.ContainerStop(s.ctx, s.ContainerID, nil); err != nil {
-		fmt.Printf("Failed to stop container: %v", err)
-	}
-
-	if err := s.cli.ContainerRemove(s.ctx, s.ContainerID, types.ContainerRemoveOptions{
-		RemoveVolumes: true,
-		Force:         true,
-	}); err != nil {
-		fmt.Printf("Failed to remove container: %v", err)
+	if err := s.containerPort.RemoveContainer(s.ctx, s.ContainerID); err != nil {
+		fmt.Print(err)
 	}
 
 	err := os.RemoveAll(s.SourceVolumePath)
