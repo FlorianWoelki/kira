@@ -43,12 +43,11 @@ func Run(language *Language, mainCode string, files []SandboxFile, sandboxTests 
 	stopTicking := make(chan bool)
 	go func() {
 		timer := time.NewTicker(time.Second * 1)
-		for t := range timer.C {
+		for range timer.C {
 			select {
 			case <-stopTicking:
 				return
 			default:
-				fmt.Println("ticking", t)
 				h, _ := time.ParseDuration("30s")
 				expireTime := s.LastTimestamp.Add(h)
 				if expireTime.Before(time.Now()) {
