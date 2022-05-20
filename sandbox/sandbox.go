@@ -127,7 +127,7 @@ type RunOutput struct {
 }
 
 func (s *Sandbox) Run() (RunOutput, error) {
-	id, err := s.containerPort.CreateContainer(s.ctx, s.UUID, s.SourceVolumePath)
+	id, err := s.containerPort.CreateContainer(s.ctx, s.Language.Image, s.UUID, s.SourceVolumePath)
 
 	if err != nil {
 		return RunOutput{}, err

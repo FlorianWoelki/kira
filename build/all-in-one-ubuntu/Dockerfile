@@ -12,6 +12,8 @@ RUN wget https://dl.google.com/go/go1.17.5.linux-arm64.tar.gz && \
 
 # Installing python
 RUN apt-get install -y python3
+RUN apt-get install -y python3-pip
+RUN pip3 install numpy
 
 # Installing java
 RUN apt-get install -y openjdk-8-jdk

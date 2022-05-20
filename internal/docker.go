@@ -21,7 +21,7 @@ func NewContainerPort(client *client.Client) *ContainerPort {
 	}
 }
 
-func (cp *ContainerPort) CreateContainer(ctx context.Context, uuid, sourceVolumePath string) (string, error) {
+func (cp *ContainerPort) CreateContainer(ctx context.Context, image, uuid, sourceVolumePath string) (string, error) {
 	workDir, err := os.Getwd()
 	if err != nil {
 		return "", err
@@ -30,7 +30,7 @@ func (cp *ContainerPort) CreateContainer(ctx context.Context, uuid, sourceVolume
 	var networkMode container.NetworkMode
 	createContainerResp, err := cp.client.ContainerCreate(ctx,
 		&container.Config{
-			Image:      "all-in-one-ubuntu",
+			Image:      image,
 			Tty:        true,
 			WorkingDir: "/runtime",
 		},
