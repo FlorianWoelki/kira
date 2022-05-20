@@ -15,9 +15,11 @@ Currently it supports the following languages:
 
 For the installation of kira, you need to have Docker and Go installed.
 
-If you want to have the latest kira image on your machine, execute the [`build_kira_image.sh`](https://github.com/FlorianWoelki/kira/blob/main/build/build_kira_image.sh) script.
+It is required for the sandbox environment to have a all-in-one image that includes all the functionality for executing the code in a docker container. For that, you need to create and build the image in `build/all-in-one-ubuntu`. You can do that by executing the `create-image` command in the `Makefile` or by executing:
 
-In addition, you need to pull the latest images by executing [`pull_images.sh`](https://github.com/FlorianWoelki/kira/blob/main/build/pull_images.sh). This will pull all the docker images that are being used by kira. This step should only be executed once.
+```sh
+docker build build/all-in-one-ubuntu -t all-in-one-ubuntu
+```
 
 ## Usage
 
