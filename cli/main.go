@@ -99,7 +99,7 @@ func main() {
 					fmt.Println("\n=== BUILD OUTPUT ===")
 					fmt.Printf("Error: %s, Body: %s\n\n", strconv.FormatBool(output.BuildError), output.BuildBody)
 					fmt.Println("=== RUN OUTPUT ===")
-					fmt.Printf("Error: %s, Body: %s\n", strconv.FormatBool(output.RunError), output.RunBody)
+					fmt.Printf("Error: %s, Execution time: %s, Body: %s\n", strconv.FormatBool(output.RunError), output.RunExecutionTime, output.RunBody)
 					fmt.Println("=== TEST OUTPUT ===")
 					fmt.Printf("Error: %s, Body: \n%s\n", strconv.FormatBool(output.TestError), output.TestBody)
 
