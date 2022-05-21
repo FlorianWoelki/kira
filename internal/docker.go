@@ -77,10 +77,6 @@ func (cp *ContainerPort) StartContainer(ctx context.Context, containerId string)
 }
 
 func (cp *ContainerPort) RemoveContainer(ctx context.Context, containerId string) error {
-	if err := cp.client.ContainerStop(ctx, containerId, nil); err != nil {
-		return fmt.Errorf("Failed to stop container: %v", err)
-	}
-
 	if err := cp.client.ContainerRemove(ctx, containerId, types.ContainerRemoveOptions{
 		RemoveVolumes: true,
 		Force:         true,
