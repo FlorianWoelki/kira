@@ -56,18 +56,15 @@ func (cp *ContainerPort) ExecuteCommand(ctx context.Context, containerId, cmd st
 	idResponse, err := cp.client.ContainerExecCreate(ctx, containerId, types.ExecConfig{
 		Env:          env,
 		Cmd:          []string{"/bin/sh", "-c", cmd},
-		Tty:          true,
 		AttachStderr: true,
 		AttachStdout: true,
-		AttachStdin:  true,
-		Detach:       true,
 	})
 
 	if err != nil {
 		return types.HijackedResponse{}, err
 	}
 
-	hr, err := cp.client.ContainerExecAttach(ctx, idResponse.ID, types.ExecStartCheck{Detach: false, Tty: true})
+	hr, err := cp.client.ContainerExecAttach(ctx, idResponse.ID, types.ExecStartCheck{})
 	if err != nil {
 		return types.HijackedResponse{}, err
 	}

@@ -9,12 +9,13 @@ import (
 )
 
 type runOutput struct {
-	BuildBody  string `json:"buildBody"`
-	BuildError bool   `json:"buildError"`
-	RunBody    string `json:"runBody"`
-	RunError   bool   `json:"runError"`
-	TestBody   string `json:"testBody"`
-	TestError  bool   `json:"testError"`
+	BuildBody        string        `json:"buildBody"`
+	BuildError       bool          `json:"buildError"`
+	RunBody          string        `json:"runBody"`
+	RunExecutionTime time.Duration `json:"runExecutionTime"`
+	RunError         bool          `json:"runError"`
+	TestBody         string        `json:"testBody"`
+	TestError        bool          `json:"testError"`
 }
 
 func Run(language *Language, mainCode string, files []SandboxFile, sandboxTests []SandboxFile) (*Sandbox, runOutput, error) {
@@ -70,10 +71,11 @@ func Run(language *Language, mainCode string, files []SandboxFile, sandboxTests 
 	}
 
 	return s, runOutput{
-		BuildBody:  output.SetupOutput.ExecBody,
-		BuildError: output.SetupOutput.Error,
-		RunBody:    output.RunOutput.ExecBody,
-		RunError:   output.RunOutput.Error,
-		TestBody:   output.RunOutput.TestsBody,
+		BuildBody:        output.SetupOutput.ExecBody,
+		BuildError:       output.SetupOutput.Error,
+		RunBody:          output.RunOutput.ExecBody,
+		RunExecutionTime: output.RunOutput.ExecutionTime,
+		RunError:         output.RunOutput.Error,
+		TestBody:         output.RunOutput.TestsBody,
 	}, nil
 }
