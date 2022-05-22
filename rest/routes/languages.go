@@ -14,10 +14,7 @@ type languagesResponse struct {
 func Languages(c echo.Context) error {
 	languages, err := pkg.GetLanguages()
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, errorResponse{
-			Message: "Could not get messages.",
-			Error:   err.Error(),
-		})
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	return c.JSON(http.StatusOK, languagesResponse{

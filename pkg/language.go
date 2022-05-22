@@ -26,7 +26,7 @@ func LoadLanguages() error {
 	languageLogger.Println("Loading languages...")
 	LoadedLanguages = make(map[string]string)
 
-	err := filepath.Walk("../languages", func(path string, info fs.FileInfo, err error) error {
+	err := filepath.Walk("./languages", func(path string, info fs.FileInfo, err error) error {
 		if strings.HasSuffix(path, "metadata.json") {
 			fileBytes, err := ioutil.ReadFile(path)
 			if err != nil {
