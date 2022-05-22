@@ -1,0 +1,10 @@
+version: '3.7'
+
+services:
+  kira:
+    build: '.'
+    container_name: kira
+    ports:
+      - 9090:9090
+    cap_add:
+      - LINUX_IMMUTABLE
