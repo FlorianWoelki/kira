@@ -19,18 +19,13 @@ const (
 	Endpoint    = "http://localhost:9090/execute"
 	ContentType = "application/json"
 
-	TotalIterationCount       = 4
+	TotalIterationCount       = 1
 	CycleStartingRequestCount = 20
 	MaxIncreaseCoefficient    = 4
 )
 
 type serverResponse struct {
-	BuildBody  string `json:"buildBody"`
-	BuildError bool   `json:"buildError"`
-	RunBody    string `json:"runBody"`
-	RunError   bool   `json:"runError"`
-	TestBody   string `json:"testBody"`
-	TestError  bool   `json:"testError"`
+	Output string `json:"output"`
 }
 
 type report struct {
@@ -195,7 +190,7 @@ func hit(idx int) report {
 
 	isServerResponseOK := res.StatusCode >= 200 && res.StatusCode < 400
 	if !isServerResponseOK {
-		report.Cause = response.RunBody
+		report.Cause = response.Output
 		report.Failed = true
 	}
 
