@@ -27,7 +27,7 @@ func Execute(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	output, err := pkg.RunCode(body.Content)
+	output, err := pkg.RunCode(body.Language, body.Content)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}

@@ -23,12 +23,16 @@ type CodeOutput struct {
 	Result      string
 }
 
-func RunCode(code string) (CodeOutput, error) {
-	language := Language{Name: "python", Version: "3.7.10", Extension: ".py", Timeout: 3}
+func RunCode(lang, code string) (CodeOutput, error) {
+	language, err := GetLanguageByName(lang)
+	if err != nil {
+		return CodeOutput{}, err
+	}
+
 	currentUser := fmt.Sprintf("user%d", user)
 	tempDirName := uuid.New().String()
 
-	err := CreateTempDir(currentUser, tempDirName)
+	err = CreateTempDir(currentUser, tempDirName)
 	if err != nil {
 		return CodeOutput{}, err
 	}

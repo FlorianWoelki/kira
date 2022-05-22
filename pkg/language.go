@@ -38,7 +38,7 @@ func LoadLanguages() error {
 				return err
 			}
 
-			LoadedLanguages[language.Name] = string(fileBytes)
+			LoadedLanguages[strings.ToLower(language.Name)] = string(fileBytes)
 		}
 
 		return nil
@@ -71,4 +71,18 @@ func GetLanguages() ([]Language, error) {
 	}
 
 	return result, nil
+}
+
+func GetLanguageByName(key string) (Language, error) {
+	find, ok := LoadedLanguages[strings.ToLower(key)]
+	if !ok {
+		return Language{}, fmt.Errorf("Could not find language with key: %s", find)
+	}
+
+	language := Language{}
+	if err := json.Unmarshal([]byte(find), &language); err != nil {
+		return Language{}, err
+	}
+
+	return language, nil
 }

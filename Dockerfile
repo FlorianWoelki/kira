@@ -2,7 +2,7 @@ FROM ubuntu:latest
 
 RUN apt-get update --fix-missing \
     && DEBIAN_FRONTEND="noninteractive" apt-get install \
-    curl xz-utils unzip golang python3 -y
+    curl xz-utils unzip golang python3 nodejs -y
 
 WORKDIR /kira
 COPY . .
