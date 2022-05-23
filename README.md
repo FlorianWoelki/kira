@@ -4,7 +4,7 @@ kira is a remote docker based sandbox code execution engine written in Go.
 
 Currently it supports the following languages:
 
-`python`, `javascript`, `go`
+`python`, `javascript`, `golang`
 
 ## Installation
 
