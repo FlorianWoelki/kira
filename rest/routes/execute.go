@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/florianwoelki/kira/pkg"
+	"github.com/florianwoelki/kira/internal"
 	"github.com/labstack/echo/v4"
 )
 
@@ -27,7 +27,7 @@ func Execute(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	output, err := pkg.RunCode(body.Language, body.Content)
+	output, err := internal.RunCode(body.Language, body.Content)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -36,6 +36,6 @@ func Execute(c echo.Context) error {
 		Output: output.Result,
 	})
 
-	pkg.CleanUp(output.User, output.TempDirName)
+	internal.CleanUp(output.User, output.TempDirName)
 	return nil
 }
