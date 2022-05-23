@@ -1,0 +1,6 @@
+{
+  "name": "Golang",
+  "version": "1.18.2",
+  "extension": ".go",
+  "timeout": 10
+}

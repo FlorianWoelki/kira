@@ -1,0 +1,1 @@
+runuser -u "$1" -- timeout -s KILL 10 go run "$2"
