@@ -15,6 +15,7 @@ type executeBody struct {
 
 type executeResponse struct {
 	Output string `json:"output"`
+	Error  string `json:"error"`
 }
 
 func Execute(c echo.Context) error {
@@ -34,6 +35,7 @@ func Execute(c echo.Context) error {
 
 	c.JSON(http.StatusOK, executeResponse{
 		Output: output.Result,
+		Error:  output.Error,
 	})
 
 	internal.CleanUp(output.User, output.TempDirName)
