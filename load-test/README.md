@@ -2,9 +2,9 @@
 ```
 []main.reportsSummary{
   main.reportsSummary{
-    MaxExecutionTimeMs: 6054,
-    AvgExecutionTimeMs: 4114,
-    MinExecutionTimeMs: 2039,
+    MaxExecutionTimeMs: 364,
+    AvgExecutionTimeMs: 342,
+    MinExecutionTimeMs: 316,
     TotalCount:         40,
     GarbageCount:       0,
     FailCount:          0,
@@ -15,9 +15,9 @@
     GarbageReasons:     []string{},
   },
   main.reportsSummary{
-    MaxExecutionTimeMs: 13127,
-    AvgExecutionTimeMs: 9401,
-    MinExecutionTimeMs: 2027,
+    MaxExecutionTimeMs: 756,
+    AvgExecutionTimeMs: 714,
+    MinExecutionTimeMs: 649,
     TotalCount:         80,
     GarbageCount:       0,
     FailCount:          0,
@@ -28,9 +28,9 @@
     GarbageReasons:     []string{},
   },
   main.reportsSummary{
-    MaxExecutionTimeMs: 15127,
-    AvgExecutionTimeMs: 9804,
-    MinExecutionTimeMs: 2023,
+    MaxExecutionTimeMs: 761,
+    AvgExecutionTimeMs: 717,
+    MinExecutionTimeMs: 651,
     TotalCount:         80,
     GarbageCount:       0,
     FailCount:          0,
@@ -41,9 +41,9 @@
     GarbageReasons:     []string{},
   },
   main.reportsSummary{
-    MaxExecutionTimeMs: 15124,
-    AvgExecutionTimeMs: 9705,
-    MinExecutionTimeMs: 2043,
+    MaxExecutionTimeMs: 820,
+    AvgExecutionTimeMs: 768,
+    MinExecutionTimeMs: 684,
     TotalCount:         80,
     GarbageCount:       0,
     FailCount:          0,
