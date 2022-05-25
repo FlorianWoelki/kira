@@ -60,17 +60,17 @@
 
 ```
 Architecture: x86_64
-CPUs: 4
-Total Memory: 7.775GiB
-Memory Used: ~11% (measured through Digital Ocean Monitoring)
+CPUs: 1
+Total Memory: 1.941GiB
+Memory Used: ~23% (measured through Digital Ocean Monitoring)
 ```
 
 ```
 []main.reportsSummary{
   main.reportsSummary{
-    MaxExecutionTimeMs: 431,
-    AvgExecutionTimeMs: 416,
-    MinExecutionTimeMs: 315,
+    MaxExecutionTimeMs: 1507,
+    AvgExecutionTimeMs: 1440,
+    MinExecutionTimeMs: 966,
     TotalCount:         40,
     GarbageCount:       0,
     FailCount:          0,
@@ -81,9 +81,9 @@ Memory Used: ~11% (measured through Digital Ocean Monitoring)
     GarbageReasons:     []string{},
   },
   main.reportsSummary{
-    MaxExecutionTimeMs: 822,
-    AvgExecutionTimeMs: 741,
-    MinExecutionTimeMs: 68,
+    MaxExecutionTimeMs: 2872,
+    AvgExecutionTimeMs: 2737,
+    MinExecutionTimeMs: 92,
     TotalCount:         80,
     GarbageCount:       0,
     FailCount:          0,
@@ -94,28 +94,28 @@ Memory Used: ~11% (measured through Digital Ocean Monitoring)
     GarbageReasons:     []string{},
   },
   main.reportsSummary{
-    MaxExecutionTimeMs: 982,
-    AvgExecutionTimeMs: 829,
-    MinExecutionTimeMs: 96,
+    MaxExecutionTimeMs: 3041,
+    AvgExecutionTimeMs: 2793,
+    MinExecutionTimeMs: 163,
     TotalCount:         80,
     GarbageCount:       0,
-    FailCount:          2,
-    SuccessCount:       78,
-    SuccessRate:        97.5,
-    FailRate:           2.5,
+    FailCount:          0,
+    SuccessCount:       80,
+    SuccessRate:        100,
+    FailRate:           0,
     GarbageRate:        0,
     GarbageReasons:     []string{},
   },
   main.reportsSummary{
-    MaxExecutionTimeMs: 881,
-    AvgExecutionTimeMs: 765,
-    MinExecutionTimeMs: 70,
+    MaxExecutionTimeMs: 3347,
+    AvgExecutionTimeMs: 3201,
+    MinExecutionTimeMs: 355,
     TotalCount:         80,
     GarbageCount:       0,
-    FailCount:          1,
-    SuccessCount:       79,
-    SuccessRate:        98.75,
-    FailRate:           1.25,
+    FailCount:          0,
+    SuccessCount:       80,
+    SuccessRate:        100,
+    FailRate:           0,
     GarbageRate:        0,
     GarbageReasons:     []string{},
   },
