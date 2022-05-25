@@ -35,12 +35,48 @@ func RunCode(lang, code string) (CodeOutput, error) {
 
 	err = CreateTempDir(currentUser, tempDirName)
 	if err != nil {
-		return CodeOutput{}, err
+		if user >= 3 {
+			user = 1
+		} else {
+			user++
+		}
+
+		currentUser = fmt.Sprintf("user%d", user)
+		err = CreateTempDir(currentUser, tempDirName)
+		if err != nil {
+			return CodeOutput{}, err
+		}
 	}
 
 	filename, err := CreateTempFile(currentUser, tempDirName, language.Extension)
 	if err != nil {
-		return CodeOutput{}, err
+		if user >= 3 {
+			user = 1
+		} else {
+			user++
+		}
+
+		currentUser = fmt.Sprintf("user%d", user)
+
+		err = CreateTempDir(currentUser, tempDirName)
+		if err != nil {
+			if user >= 3 {
+				user = 1
+			} else {
+				user++
+			}
+
+			currentUser = fmt.Sprintf("user%d", user)
+			err = CreateTempDir(currentUser, tempDirName)
+			if err != nil {
+				return CodeOutput{}, err
+			}
+		}
+
+		filename, err = CreateTempFile(currentUser, tempDirName, language.Extension)
+		if err != nil {
+			return CodeOutput{}, err
+		}
 	}
 
 	err = WriteToFile(filename, code)
