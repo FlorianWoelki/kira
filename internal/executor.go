@@ -50,6 +50,7 @@ func RunCode(lang, code string, retries int) (CodeOutput, error) {
 			return CodeOutput{}, nil
 		}
 
+		DeleteTempDir(currentUser, tempDirName)
 		return RunCode(lang, code, retries-1)
 	}
 
