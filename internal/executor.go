@@ -24,7 +24,7 @@ type CodeOutput struct {
 	Error       string
 }
 
-func RunCode(lang, code string) (CodeOutput, error) {
+func RunCode(lang, code string, retries int) (CodeOutput, error) {
 	language, err := GetLanguageByName(lang)
 	if err != nil {
 		return CodeOutput{}, err
@@ -35,48 +35,22 @@ func RunCode(lang, code string) (CodeOutput, error) {
 
 	err = CreateTempDir(currentUser, tempDirName)
 	if err != nil {
-		if user >= 3 {
-			user = 1
-		} else {
-			user++
+		updateUser()
+		if retries == 0 {
+			return CodeOutput{}, nil
 		}
 
-		currentUser = fmt.Sprintf("user%d", user)
-		err = CreateTempDir(currentUser, tempDirName)
-		if err != nil {
-			return CodeOutput{}, err
-		}
+		return RunCode(lang, code, retries-1)
 	}
 
 	filename, err := CreateTempFile(currentUser, tempDirName, language.Extension)
 	if err != nil {
-		if user >= 3 {
-			user = 1
-		} else {
-			user++
+		updateUser()
+		if retries == 0 {
+			return CodeOutput{}, nil
 		}
 
-		currentUser = fmt.Sprintf("user%d", user)
-
-		err = CreateTempDir(currentUser, tempDirName)
-		if err != nil {
-			if user >= 3 {
-				user = 1
-			} else {
-				user++
-			}
-
-			currentUser = fmt.Sprintf("user%d", user)
-			err = CreateTempDir(currentUser, tempDirName)
-			if err != nil {
-				return CodeOutput{}, err
-			}
-		}
-
-		filename, err = CreateTempFile(currentUser, tempDirName, language.Extension)
-		if err != nil {
-			return CodeOutput{}, err
-		}
+		return RunCode(lang, code, retries-1)
 	}
 
 	err = WriteToFile(filename, code)
@@ -99,6 +73,10 @@ func CleanUp(currentUser, tempDirName string) {
 	cleanProcesses(currentUser)
 	restoreUserDir(currentUser)
 
+	updateUser()
+}
+
+func updateUser() {
 	if user >= 3 {
 		user = 1
 	} else {
