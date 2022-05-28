@@ -23,7 +23,7 @@ const App: React.FC = (): JSX.Element => {
     if (jsonResult.error) {
       setCodeResult(`Error: ${jsonResult.error}`);
     } else {
-      setCodeResult(`${jsonResult.error}`);
+      setCodeResult(`${jsonResult.output}`);
     }
 
     console.log(jsonResult);
@@ -35,11 +35,9 @@ const App: React.FC = (): JSX.Element => {
         value="print('Hello World')"
         ref={codeEditorRef}
       ></MonacoEditor>
-
       <div className="absolute left-0 bottom-0 px-4 py-2 mb-4 ml-4 bg-gray-200 rounded">
         <p>Output: {codeResult.length === 0 ? '/' : codeResult}</p>
       </div>
-
       <button
         className="absolute right-0 bottom-0 px-4 py-2 bg-green-600 rounded text-white mb-4 mr-4 transition duration-100 ease-in-out hover:bg-green-500"
         onClick={runCode}
