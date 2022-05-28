@@ -2,12 +2,8 @@ import { useRef, useState } from 'react';
 import { MonacoEditor } from './Editor';
 
 interface CodeExecutionResult {
-  buildBody: string;
-  buildError: boolean;
-  runBody: string;
-  runError: boolean;
-  testBody: string;
-  testError: boolean;
+  output: string;
+  error: string;
 }
 
 const App: React.FC = (): JSX.Element => {
@@ -24,12 +20,10 @@ const App: React.FC = (): JSX.Element => {
     });
 
     const jsonResult: CodeExecutionResult = await result.json();
-    if (jsonResult.buildError) {
-      setCodeResult(`Build error: ${jsonResult.buildBody}`);
-    } else if (jsonResult.runError) {
-      setCodeResult(`Run error: ${jsonResult.runBody}`);
+    if (jsonResult.error) {
+      setCodeResult(`Error: ${jsonResult.error}`);
     } else {
-      setCodeResult(`${jsonResult.runBody}`);
+      setCodeResult(`${jsonResult.error}`);
     }
 
     console.log(jsonResult);
