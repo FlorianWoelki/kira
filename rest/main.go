@@ -13,7 +13,6 @@ import (
 )
 
 var logger *log.Logger = log.New(os.Stdout, "api: ", log.LstdFlags|log.Lshortfile)
-var local = false // TODO: Change to env variable.
 
 // loadOrigins will load all the origins from a specific string.
 // It splits the string by comma and returns the origins.
@@ -34,16 +33,14 @@ func main() {
 
 	origins := loadOrigins(os.Getenv("ORIGINS"))
 
-	if !local {
-		err := internal.CreateRunners()
-		if err != nil {
-			logger.Fatalf("Error while trying to create runners: %v+", err)
-		}
+	err = internal.CreateRunners()
+	if err != nil {
+		logger.Fatalf("Error while trying to create runners: %v+", err)
+	}
 
-		err = internal.CreateUsers()
-		if err != nil {
-			logger.Fatalf("Error while trying to create users: %v+", err)
-		}
+	err = internal.CreateUsers()
+	if err != nil {
+		logger.Fatalf("Error while trying to create users: %v+", err)
 	}
 
 	err = internal.LoadLanguages()
