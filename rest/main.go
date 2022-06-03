@@ -3,9 +3,11 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
 
 	"github.com/florianwoelki/kira/internal"
 	"github.com/florianwoelki/kira/rest/routes"
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -13,7 +15,25 @@ import (
 var logger *log.Logger = log.New(os.Stdout, "api: ", log.LstdFlags|log.Lshortfile)
 var local = false // TODO: Change to env variable.
 
+// loadOrigins will load all the origins from a specific string.
+// It splits the string by comma and returns the origins.
+func loadOrigins(str string) []string {
+	result := strings.Split(str, ",")
+	for i := 0; i < len(result); i++ {
+		result[i] = strings.TrimSpace(result[i])
+	}
+
+	return result
+}
+
 func main() {
+	err := godotenv.Load("local.env")
+	if err != nil {
+		log.Fatalf("Error occurred while loading env file: %s", err)
+	}
+
+	origins := loadOrigins(os.Getenv("ORIGINS"))
+
 	if !local {
 		err := internal.CreateRunners()
 		if err != nil {
@@ -26,14 +46,14 @@ func main() {
 		}
 	}
 
-	err := internal.LoadLanguages()
+	err = internal.LoadLanguages()
 	if err != nil {
 		logger.Fatalf("Error while loading languages: %v+", err)
 	}
 
 	e := echo.New()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"http://localhost:3000"},
+		AllowOrigins: origins,
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 	}))
 
