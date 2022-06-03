@@ -27,7 +27,7 @@ func loadOrigins(str string) []string {
 }
 
 func main() {
-	err := godotenv.Load("local.env")
+	err := godotenv.Load("rest/local.env")
 	if err != nil {
 		log.Fatalf("Error occurred while loading env file: %s", err)
 	}
