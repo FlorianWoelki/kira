@@ -2,7 +2,9 @@ FROM ubuntu:latest
 
 RUN apt-get update --fix-missing \
     && DEBIAN_FRONTEND="noninteractive" apt-get install \
-    curl xz-utils unzip golang python3 nodejs -y
+    curl xz-utils unzip golang python3 nodejs default-jre-headless -y \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /kira
 COPY . .
