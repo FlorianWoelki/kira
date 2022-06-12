@@ -1,6 +1,6 @@
 {
   "name": "Java",
-  "version": "17",
+  "version": "11",
   "extension": ".java",
   "timeout": 4
 }
