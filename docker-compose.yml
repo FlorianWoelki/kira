@@ -2,6 +2,7 @@ version: '3.7'
 
 services:
   kira:
+    restart: always
     build: '.'
     container_name: kira
     ports:
