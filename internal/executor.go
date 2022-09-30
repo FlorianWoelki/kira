@@ -3,7 +3,6 @@ package internal
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -121,7 +120,7 @@ func cleanProcesses(currentUser string) error {
 
 func restoreUserDir(currentUser string) {
 	userDir := "/tmp/" + currentUser
-	if _, err := ioutil.ReadDir(userDir); err != nil {
+	if _, err := os.ReadDir(userDir); err != nil {
 		if os.IsNotExist(err) {
 			_ = exec.Command("runuser", "-u", currentUser, "--", "mkdir", userDir).Run()
 		}

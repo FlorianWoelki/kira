@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/fs"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -28,7 +27,7 @@ func LoadLanguages() error {
 
 	err := filepath.Walk("./languages", func(path string, info fs.FileInfo, err error) error {
 		if strings.HasSuffix(path, "metadata.json") {
-			fileBytes, err := ioutil.ReadFile(path)
+			fileBytes, err := os.ReadFile(path)
 			if err != nil {
 				return err
 			}
@@ -53,8 +52,8 @@ func LoadLanguages() error {
 }
 
 func GetLanguages() ([]Language, error) {
-	if LoadedLanguages == nil || len(LoadedLanguages) == 0 {
-		return nil, fmt.Errorf("No loaded languages.")
+	if len(LoadedLanguages) == 0 {
+		return nil, fmt.Errorf("could not find any to be loaded languages")
 	}
 
 	result := make([]Language, 0)
@@ -76,7 +75,7 @@ func GetLanguages() ([]Language, error) {
 func GetLanguageByName(key string) (Language, error) {
 	find, ok := LoadedLanguages[strings.ToLower(key)]
 	if !ok {
-		return Language{}, fmt.Errorf("Could not find language with key: %s", find)
+		return Language{}, fmt.Errorf("could not find language with key: %s", find)
 	}
 
 	language := Language{}
