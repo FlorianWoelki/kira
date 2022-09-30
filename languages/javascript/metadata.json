@@ -2,5 +2,5 @@
   "name": "JavaScript",
   "extension": ".js",
   "version": "16.3.1",
-  "timeout": 3
+  "timeout": 10
 }
