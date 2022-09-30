@@ -19,7 +19,7 @@ const (
 	Endpoint    = "http://localhost:9090/execute"
 	ContentType = "application/json"
 
-	TotalIterationCount       = 4
+	TotalIterationCount       = 1
 	CycleStartingRequestCount = 20
 	MaxIncreaseCoefficient    = 4
 )
@@ -44,19 +44,19 @@ type requestBody struct {
 var requestBodies = []requestBody{
 	{
 		Lang:    "python",
-		Content: "for i in range(10):\n\tprint('*' * (i + 1))",
+		Content: "from time import sleep\nsleep(1)\nfor i in range(10):\n\tprint('*' * (i + 1))",
 	},
 	{
 		Lang:    "python",
-		Content: "for i in range(20):\n\tprint('*' * (i + 1))",
+		Content: "from time import sleep\nsleep(1)\nfor i in range(20):\n\tprint('*' * (i + 1))",
 	},
 	{
 		Lang:    "python",
-		Content: "for i in range(30):\n\tprint('*' * (i + 1))",
+		Content: "from time import sleep\nsleep(1)\nfor i in range(30):\n\tprint('*' * (i + 1))",
 	},
 	{
 		Lang:    "python",
-		Content: "for i in range(40):\n\tprint('*' * (i + 1))",
+		Content: "from time import sleep\nsleep(1)\nfor i in range(40):\n\tprint('*' * (i + 1))",
 	},
 }
 

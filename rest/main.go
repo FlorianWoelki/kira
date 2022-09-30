@@ -52,7 +52,7 @@ func main() {
 	e := echo.New()
 	e.Use(middleware.RateLimiterWithConfig(middleware.RateLimiterConfig{
 		Skipper: middleware.DefaultSkipper,
-		Store:   middleware.NewRateLimiterMemoryStore(20),
+		Store:   middleware.NewRateLimiterMemoryStore(100),
 		IdentifierExtractor: func(context echo.Context) (string, error) {
 			id := context.RealIP()
 			return id, nil
