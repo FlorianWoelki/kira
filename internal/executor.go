@@ -75,7 +75,7 @@ func CleanUp(currentUser, tempDirName string) {
 }
 
 func updateUser() {
-	if user >= 100 {
+	if user >= 50 {
 		user = 1
 	} else {
 		user++
