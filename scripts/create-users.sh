@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Create runnable users and apply limits.
-for i in {1..50}
+for i in {0..49}
 do
   current_user="user$i"
   # Adds a new user into the runners group for to the directory `/tmp/<current_user>`.

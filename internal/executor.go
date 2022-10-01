@@ -14,43 +14,53 @@ const (
 	maxOutputBufferCapacity = "65332"
 )
 
-var user = 1
-
 type CodeOutput struct {
-	User        string
+	User        User
 	TempDirName string
 	Result      string
 	Error       string
 }
 
-func RunCode(lang, code string, retries int) (CodeOutput, error) {
+type RceEngine struct {
+	systemUsers *SystemUsers
+}
+
+func NewRceEngine() *RceEngine {
+	return &RceEngine{
+		systemUsers: NewSystemUser(50),
+	}
+}
+
+func (rce *RceEngine) RunCode(lang, code string, retries int) (CodeOutput, error) {
 	language, err := GetLanguageByName(lang)
 	if err != nil {
 		return CodeOutput{}, err
 	}
 
-	currentUser := fmt.Sprintf("user%d", user)
-	updateUser()
+	user, err := rce.systemUsers.Acquire()
+	if err != nil {
+		fmt.Println("error in acquire user", err)
+	}
 
 	tempDirName := uuid.New().String()
 
-	err = CreateTempDir(currentUser, tempDirName)
+	err = CreateTempDir(user.username, tempDirName)
 	if err != nil {
 		if retries == 0 {
 			return CodeOutput{}, nil
 		}
 
-		return RunCode(lang, code, retries-1)
+		return rce.RunCode(lang, code, retries-1)
 	}
 
-	filename, err := CreateTempFile(currentUser, tempDirName, language.Extension)
+	filename, err := CreateTempFile(user.username, tempDirName, language.Extension)
 	if err != nil {
 		if retries == 0 {
 			return CodeOutput{}, nil
 		}
 
-		DeleteTempDir(currentUser, tempDirName)
-		return RunCode(lang, code, retries-1)
+		DeleteTempDir(user.username, tempDirName)
+		return rce.RunCode(lang, code, retries-1)
 	}
 
 	err = WriteToFile(filename, code)
@@ -58,34 +68,26 @@ func RunCode(lang, code string, retries int) (CodeOutput, error) {
 		return CodeOutput{}, err
 	}
 
-	output, errorString := executeFile(currentUser, filename, language)
+	output, errorString := rce.executeFile(user.username, filename, language)
 
 	return CodeOutput{
-		User:        currentUser,
+		User:        *user,
 		TempDirName: tempDirName,
 		Result:      output,
 		Error:       errorString,
 	}, nil
 }
 
-func CleanUp(currentUser, tempDirName string) {
-	DeleteTempDir(currentUser, tempDirName)
-	cleanProcesses(currentUser)
-	restoreUserDir(currentUser)
+func (rce *RceEngine) CleanUp(user User, tempDirName string) {
+	DeleteTempDir(user.username, tempDirName)
+	rce.cleanProcesses(user.username)
+	rce.restoreUserDir(user.username)
+	rce.systemUsers.Release(user.uid)
 }
 
-func updateUser() {
-	if user >= 50 {
-		user = 1
-	} else {
-		user++
-	}
-}
-
-func executeFile(currentUser, file string, language Language) (string, string) {
+func (rce *RceEngine) executeFile(currentUser, file string, language Language) (string, string) {
 	script := fmt.Sprintf("/kira/languages/%s/run.sh", strings.ToLower(language.Name))
 
-	fmt.Printf("Executing as %s\n", currentUser)
 	run := exec.Command("/bin/bash", script, currentUser, file)
 	head := exec.Command("head", "--bytes", maxOutputBufferCapacity)
 
@@ -114,11 +116,11 @@ func executeFile(currentUser, file string, language Language) (string, string) {
 	return result, errBuffer.String()
 }
 
-func cleanProcesses(currentUser string) error {
+func (rce *RceEngine) cleanProcesses(currentUser string) error {
 	return exec.Command("pkill", "-9", "-u", currentUser).Run()
 }
 
-func restoreUserDir(currentUser string) {
+func (rce *RceEngine) restoreUserDir(currentUser string) {
 	userDir := "/tmp/" + currentUser
 	if _, err := os.ReadDir(userDir); err != nil {
 		if os.IsNotExist(err) {

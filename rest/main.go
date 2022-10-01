@@ -69,8 +69,12 @@ func main() {
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 	}))
 
+	rce := internal.NewRceEngine()
+
 	e.GET("/languages", routes.Languages)
-	e.POST("/execute", routes.Execute)
+	e.POST("/execute", func(c echo.Context) error {
+		return routes.Execute(c, rce)
+	})
 
 	e.Logger.Fatal(e.Start(":9090"))
 }
