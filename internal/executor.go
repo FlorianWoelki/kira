@@ -39,7 +39,8 @@ func (rce *RceEngine) RunCode(lang, code string, retries int) (CodeOutput, error
 
 	user, err := rce.systemUsers.Acquire()
 	if err != nil {
-		fmt.Println("error in acquire user", err)
+		// TODO: Implement working queue.
+		return rce.RunCode(lang, code, retries)
 	}
 
 	tempDirName := uuid.New().String()
