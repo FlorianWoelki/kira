@@ -21,7 +21,7 @@ const (
 
 	TotalIterationCount       = 3
 	CycleStartingRequestCount = 20
-	MaxIncreaseCoefficient    = 4
+	MaxIncreaseCoefficient    = 2
 )
 
 type serverResponse struct {
