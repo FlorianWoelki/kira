@@ -10,10 +10,10 @@ do
   # Set the limits for the user.
   echo "$current_user soft nproc 256" >> /etc/security/limits.conf
   echo "$current_user hard nproc 256" >> /etc/security/limits.conf
-  echo "$current_user soft nofile 4096" >> /etc/security/limits.conf
-  echo "$current_user hard nofile 4096" >> /etc/security/limits.conf
-  echo "$current_user soft fsize 10120" >> /etc/security/limits.conf
-  echo "$current_user hard fsize 10120" >> /etc/security/limits.conf
+  echo "$current_user soft nofile 2048" >> /etc/security/limits.conf
+  echo "$current_user hard nofile 2048" >> /etc/security/limits.conf
+  echo "$current_user soft fsize 30000000" >> /etc/security/limits.conf
+  echo "$current_user hard fsize 30000000" >> /etc/security/limits.conf
   echo "$current_user soft memlock 40960" >> /etc/security/limits.conf
   echo "$current_user hard memlock 40960" >> /etc/security/limits.conf
 done
