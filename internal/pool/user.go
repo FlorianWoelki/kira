@@ -1,15 +1,19 @@
-package internal
+package pool
 
 import "fmt"
 
 type User struct {
-	uid      uint32
-	free     bool
-	username string
+	Uid      uint32
+	Free     bool
+	Username string
 }
 
 type SystemUsers struct {
 	users []*User
+}
+
+func (su SystemUsers) GetUsers() []*User {
+	return su.users
 }
 
 func NewSystemUser(amount uint32) *SystemUsers {
@@ -17,9 +21,9 @@ func NewSystemUser(amount uint32) *SystemUsers {
 
 	for i := range users {
 		users[i] = &User{
-			uid:      uint32(i),
-			free:     true,
-			username: fmt.Sprintf("user%d", i),
+			Uid:      uint32(i),
+			Free:     true,
+			Username: fmt.Sprintf("user%d", i),
 		}
 	}
 
@@ -30,8 +34,8 @@ func NewSystemUser(amount uint32) *SystemUsers {
 
 func (su *SystemUsers) Acquire() (*User, error) {
 	for _, user := range su.users {
-		if user.free {
-			user.free = false
+		if user.Free {
+			user.Free = false
 			return user, nil
 		}
 	}
@@ -41,8 +45,8 @@ func (su *SystemUsers) Acquire() (*User, error) {
 
 func (su *SystemUsers) Release(uid uint32) {
 	for _, user := range su.users {
-		if user.uid == uid {
-			user.free = true
+		if user.Uid == uid {
+			user.Free = true
 		}
 	}
 }

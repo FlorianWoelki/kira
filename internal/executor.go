@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/florianwoelki/kira/internal/pool"
 	"github.com/google/uuid"
 )
 
@@ -14,79 +15,80 @@ const (
 	maxOutputBufferCapacity = "65332"
 )
 
-type CodeOutput struct {
-	User        User
-	TempDirName string
-	Result      string
-	Error       string
-}
-
 type RceEngine struct {
-	systemUsers *SystemUsers
+	systemUsers *pool.SystemUsers
+	pool        *pool.WorkerPool
 }
 
 func NewRceEngine() *RceEngine {
 	return &RceEngine{
-		systemUsers: NewSystemUser(50),
+		systemUsers: pool.NewSystemUser(50),
+		pool:        pool.NewWorkerPool(50, 100),
 	}
 }
 
-func (rce *RceEngine) RunCode(lang, code string, retries int) (CodeOutput, error) {
+func (rce *RceEngine) action(lang, code string, ch chan<- pool.CodeOutput) {
 	language, err := GetLanguageByName(lang)
 	if err != nil {
-		return CodeOutput{}, err
+		ch <- pool.CodeOutput{}
+		return
 	}
 
 	user, err := rce.systemUsers.Acquire()
 	if err != nil {
-		// TODO: Implement working queue.
-		return rce.RunCode(lang, code, retries)
+		rce.systemUsers.Release(user.Uid)
+		ch <- pool.CodeOutput{}
+		return
 	}
 
 	tempDirName := uuid.New().String()
 
-	err = CreateTempDir(user.username, tempDirName)
+	err = CreateTempDir(user.Username, tempDirName)
 	if err != nil {
-		rce.systemUsers.Release(user.uid)
-		if retries == 0 {
-			return CodeOutput{}, nil
-		}
-
-		return rce.RunCode(lang, code, retries-1)
+		rce.systemUsers.Release(user.Uid)
+		ch <- pool.CodeOutput{}
+		return
 	}
 
-	filename, err := CreateTempFile(user.username, tempDirName, language.Extension)
+	filename, err := CreateTempFile(user.Username, tempDirName, language.Extension)
 	if err != nil {
-		rce.systemUsers.Release(user.uid)
-		if retries == 0 {
-			return CodeOutput{}, nil
-		}
-
-		DeleteTempDir(user.username, tempDirName)
-		return rce.RunCode(lang, code, retries-1)
+		rce.systemUsers.Release(user.Uid)
+		DeleteTempDir(user.Username, tempDirName)
+		ch <- pool.CodeOutput{}
+		return
 	}
 
 	err = WriteToFile(filename, code)
 	if err != nil {
-		rce.systemUsers.Release(user.uid)
-		return CodeOutput{}, err
+		rce.systemUsers.Release(user.Uid)
+		ch <- pool.CodeOutput{}
+		return
 	}
 
-	output, errorString := rce.executeFile(user.username, filename, language)
+	output, errorString := rce.executeFile(user.Username, filename, language)
 
-	return CodeOutput{
+	ch <- pool.CodeOutput{
 		User:        *user,
 		TempDirName: tempDirName,
 		Result:      output,
 		Error:       errorString,
-	}, nil
+	}
+
+	rce.CleanUp(user, tempDirName)
 }
 
-func (rce *RceEngine) CleanUp(user User, tempDirName string) {
-	DeleteTempDir(user.username, tempDirName)
-	rce.cleanProcesses(user.username)
-	rce.restoreUserDir(user.username)
-	rce.systemUsers.Release(user.uid)
+func (rce *RceEngine) Dispatch(lang, code string) (pool.CodeOutput, error) {
+	dataChannel := make(chan pool.CodeOutput)
+	rce.pool.SubmitJob(lang, code, rce.action, dataChannel)
+	output := <-dataChannel
+	return output, nil
+}
+
+func (rce *RceEngine) CleanUp(user *pool.User, tempDirName string) {
+	DeleteTempDir(user.Username, tempDirName)
+	rce.cleanProcesses(user.Username)
+	rce.restoreUserDir(user.Username)
+	rce.systemUsers.Release(user.Uid)
 }
 
 func (rce *RceEngine) executeFile(currentUser, file string, language Language) (string, string) {

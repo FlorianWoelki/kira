@@ -28,7 +28,7 @@ func Execute(c echo.Context, rceEngine *internal.RceEngine) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	output, err := rceEngine.RunCode(body.Language, body.Content, 1)
+	output, err := rceEngine.Dispatch(body.Language, body.Content)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -38,6 +38,6 @@ func Execute(c echo.Context, rceEngine *internal.RceEngine) error {
 		Error:  output.Error,
 	})
 
-	rceEngine.CleanUp(output.User, output.TempDirName)
+	//rceEngine.CleanUp(output.User, output.TempDirName)
 	return nil
 }
