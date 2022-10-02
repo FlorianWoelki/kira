@@ -1,0 +1,6 @@
+{
+  "name": "Bash",
+  "version": "5.0.17",
+  "extension": ".sh",
+  "timeout": 10
+}
