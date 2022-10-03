@@ -5,59 +5,86 @@ import (
 	"sync"
 )
 
-type Node struct {
-	value interface{}
+type node struct {
+	values []interface{}
+	next   *node
 }
 
 type Queue struct {
-	nodes   []*Node
-	size    uint32
-	maxSize uint32
+	head             *node
+	tail             *node
+	headPointer      uint
+	headSlicePointer uint
+	tailPointer      uint
+	len              uint
 }
 
-func (q Queue) createNode(data interface{}) *Node {
-	node := Node{}
-	node.value = data
-	return &node
-}
-
-func (q *Queue) put(data interface{}) error {
-	if q.size >= q.maxSize {
-		return fmt.Errorf("queue is full")
+func (q *Queue) put(data interface{}) {
+	if q.head == nil {
+		// Create head node when no nodes are in the queue.
+		head := &node{values: make([]interface{}, 4)}
+		head.next = head
+		q.head = head
+		q.tail = head
+		q.tail.values[0] = data
+		q.headSlicePointer = 3
+		q.tailPointer = 1
+	} else if q.tailPointer < uint(len(q.tail.values)) {
+		q.tail.values[q.tailPointer] = data
+		q.tailPointer++
+	} else if q.tailPointer < 64 {
+		newValues := make([]interface{}, len(q.tail.values)*4)
+		copy(newValues, q.tail.values)
+		q.tail.values = newValues
+		q.tail.values[q.tailPointer] = data
+		q.tailPointer++
+		q.headSlicePointer = uint(len(newValues) - 1)
+	} else if q.tail.next != q.head {
+		next := q.tail.next
+		q.tail = next
+		q.tail.values[0] = data
+		q.tailPointer = 1
+	} else {
+		// No available node is present in the queue.
+		node := &node{values: make([]interface{}, 256)}
+		node.next = q.head
+		q.tail.next = node
+		q.tail = node
+		q.tail.values[0] = data
+		q.tailPointer = 1
 	}
 
-	node := q.createNode(data)
-	q.nodes = append(q.nodes[:q.size], node)
-	q.size++
-
-	return nil
+	q.len++
 }
 
 func (q *Queue) pop() (interface{}, error) {
-	if q.empty() {
+	if q.len == 0 {
 		return nil, fmt.Errorf("queue is empty")
 	}
 
-	q.size--
-	node := q.nodes[0]
+	value := q.head.values[q.headPointer]
 
-	q.nodes = q.nodes[1:]
+	if q.headPointer < q.headSlicePointer {
+		q.headPointer++
+	} else if q.head == q.tail {
+		q.tailPointer = q.headPointer
+	} else {
+		q.headPointer = 0
+		q.head = q.head.next
+		q.headSlicePointer = uint(len(q.head.values) - 1)
+	}
 
-	return node.value, nil
+	q.len--
+	return value, nil
 }
 
 func (q *Queue) empty() bool {
-	return q.size <= 0
-}
-
-func (q *Queue) full() bool {
-	return q.size >= q.maxSize
+	return q.len <= 0
 }
 
 type ConcurrentQueue struct {
 	lock     *sync.Mutex
 	notEmpty *sync.Cond
-	notFull  *sync.Cond
 	backend  *Queue
 }
 
@@ -65,27 +92,18 @@ func NewConcurrentQueue(maxSize uint32) *ConcurrentQueue {
 	queue := ConcurrentQueue{
 		lock: &sync.Mutex{},
 	}
-	queue.notFull = sync.NewCond(queue.lock)
 	queue.notEmpty = sync.NewCond(queue.lock)
 
-	queue.backend = &Queue{
-		size:    0,
-		maxSize: maxSize,
-	}
+	queue.backend = &Queue{}
 	return &queue
 }
 
-func (c *ConcurrentQueue) enqueue(data interface{}) error {
+func (c *ConcurrentQueue) enqueue(data interface{}) {
 	c.lock.Lock()
 
-	for c.backend.full() {
-		c.notFull.Wait()
-	}
-
-	err := c.backend.put(data)
+	c.backend.put(data)
 	c.notEmpty.Signal()
 	c.lock.Unlock()
-	return err
 }
 
 func (c *ConcurrentQueue) dequeue() (interface{}, error) {
@@ -96,21 +114,6 @@ func (c *ConcurrentQueue) dequeue() (interface{}, error) {
 	}
 
 	data, err := c.backend.pop()
-	c.notFull.Signal()
 	c.lock.Unlock()
 	return data, err
-}
-
-func (c *ConcurrentQueue) getSize() uint32 {
-	c.lock.Lock()
-	size := c.backend.size
-	c.lock.Unlock()
-	return size
-}
-
-func (c *ConcurrentQueue) getMaxSize() uint32 {
-	c.lock.Lock()
-	maxSize := c.backend.maxSize
-	c.lock.Unlock()
-	return maxSize
 }
