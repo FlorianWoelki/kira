@@ -19,7 +19,7 @@ type Queue struct {
 	len              uint
 }
 
-func (q *Queue) put(data interface{}) {
+func (q *Queue) push(data interface{}) {
 	if q.head == nil {
 		// Create head node when no nodes are in the queue.
 		head := &node{values: make([]interface{}, 4)}
@@ -101,7 +101,7 @@ func NewConcurrentQueue(maxSize uint32) *ConcurrentQueue {
 func (c *ConcurrentQueue) enqueue(data interface{}) {
 	c.lock.Lock()
 
-	c.backend.put(data)
+	c.backend.push(data)
 	c.notEmpty.Signal()
 	c.lock.Unlock()
 }
