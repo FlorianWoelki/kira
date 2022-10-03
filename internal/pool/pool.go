@@ -14,7 +14,7 @@ type CodeOutput struct {
 }
 
 type WorkerPool struct {
-	queue        *ConcurrentQueue
+	queue        *ConcurrentQueue[WorkType]
 	nWorkers     int
 	queueSize    int
 	workingGroup *sync.WaitGroup
@@ -30,7 +30,7 @@ type WorkType struct {
 func NewWorkerPool(nWorkers, queueSize int) *WorkerPool {
 	var wg sync.WaitGroup
 
-	queue := NewConcurrentQueue(uint32(queueSize))
+	queue := NewConcurrentQueue[WorkType](uint32(queueSize))
 
 	for idx := 0; idx < nWorkers; idx++ {
 		wg.Add(1)
@@ -55,7 +55,7 @@ func (wp *WorkerPool) SubmitJob(lang, code string, action func(lang, code string
 	wp.queue.enqueue(work)
 }
 
-func poolWorker(wg *sync.WaitGroup, queue *ConcurrentQueue, idx int) {
+func poolWorker[T any](wg *sync.WaitGroup, queue *ConcurrentQueue[T], idx int) {
 	defer wg.Done()
 
 	for {
