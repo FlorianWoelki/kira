@@ -21,6 +21,8 @@ type node[T any] struct {
 	next   *node[T]
 }
 
+// The implementation of the queue is a modified duplicate of the queue design
+// principles described in https://github.com/ef-ds/queue.
 type Queue[T any] struct {
 	head             *node[T]
 	tail             *node[T]
