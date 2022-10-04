@@ -31,7 +31,7 @@ The REST API will start on port `:9090`.
 The following section contains all the REST API endpoints. The JSON body and endpoints follow the CLI structure.
 
 <details>
-  <summary>/execute</summary>
+  <summary>POST /execute</summary>
 
   <p>
     The execute endpoint will execute code in a containerized sandbox.
@@ -43,6 +43,33 @@ The following section contains all the REST API endpoints. The JSON body and end
       "language": "python",
       "content": "print(\"42 Hello World\")"
   }
+  ```
+</details>
+
+<details>
+  <summary>GET /languages</summary>
+
+  <p>
+    Will return all languages that are possible for remote execution.
+  </p>
+
+  This JSON structure is an example for the response body:
+  ```json
+  [
+      {
+          "name": "python",
+          "version": "3.7.10",
+          "extension": ".py",
+          "timeout": 10
+      },
+      {
+          "name": "javascript",
+          "version": "16.3.1",
+          "extension": ".js",
+          "timeout": 10
+      },
+      // ...
+  ]
   ```
 </details>
 
