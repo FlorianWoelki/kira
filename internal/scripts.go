@@ -42,7 +42,7 @@ func CreateBinaries() error {
 	err := filepath.Walk(".", func(path string, info fs.FileInfo, err error) error {
 		if strings.HasSuffix(path, "setup.sh") {
 			dir := filepath.Base(filepath.Dir(path))
-			scriptsLogger.Printf("Downloading %s binaries", dir)
+			scriptsLogger.Printf("Downloading %s binaries...", dir)
 			runSetupScript(path, dir)
 		}
 
