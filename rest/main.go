@@ -49,6 +49,11 @@ func main() {
 		logger.Fatalf("Error while loading languages: %v+", err)
 	}
 
+	err = internal.CreateBinaries()
+	if err != nil {
+		logger.Fatalf("Error while creating binaries: %v+", err)
+	}
+
 	e := echo.New()
 	e.Use(middleware.RateLimiterWithConfig(middleware.RateLimiterConfig{
 		Skipper: middleware.DefaultSkipper,

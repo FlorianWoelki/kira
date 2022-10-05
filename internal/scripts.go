@@ -1,9 +1,11 @@
 package internal
 
 import (
+	"io/fs"
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
 
@@ -32,5 +34,35 @@ func CreateUsers() error {
 	}
 
 	scriptsLogger.Println("Users created successfully.")
+	return nil
+}
+
+func CreateBinaries() error {
+	scriptsLogger.Println("Creating binaries...")
+	err := filepath.Walk(".", func(path string, info fs.FileInfo, err error) error {
+		if strings.HasSuffix(path, "setup.sh") {
+			dir := filepath.Base(filepath.Dir(path))
+			scriptsLogger.Printf("Downloading %s binaries", dir)
+			runSetupScript(path, dir)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	scriptsLogger.Println("Binaries have been downloaded successfully.")
+	return nil
+}
+
+func runSetupScript(path, binary string) error {
+	err := exec.Command("bash", path).Run()
+	if err != nil {
+		return err
+	}
+
+	scriptsLogger.Printf("%s binaries downloaded successfully.", binary)
 	return nil
 }
