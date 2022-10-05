@@ -40,10 +40,10 @@ func CreateUsers() error {
 func CreateBinaries() error {
 	scriptsLogger.Println("Creating binaries...")
 	err := filepath.Walk(".", func(path string, info fs.FileInfo, err error) error {
-		if strings.HasSuffix(path, "setup.sh") {
+		if strings.HasSuffix(path, "install.sh") {
 			dir := filepath.Base(filepath.Dir(path))
 			scriptsLogger.Printf("Downloading %s binaries...", dir)
-			runSetupScript(path, dir)
+			runInstallScript(path, dir)
 		}
 
 		return nil
@@ -57,7 +57,7 @@ func CreateBinaries() error {
 	return nil
 }
 
-func runSetupScript(path, binary string) error {
+func runInstallScript(path, binary string) error {
 	err := exec.Command("bash", path).Run()
 	if err != nil {
 		return err
