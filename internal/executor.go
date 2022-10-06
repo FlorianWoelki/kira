@@ -12,6 +12,7 @@ import (
 )
 
 const (
+	amountOfUsers           = 50
 	maxOutputBufferCapacity = "65332"
 )
 
@@ -22,8 +23,8 @@ type RceEngine struct {
 
 func NewRceEngine() *RceEngine {
 	return &RceEngine{
-		systemUsers: pool.NewSystemUser(50),
-		pool:        pool.NewWorkerPool(50, 100),
+		systemUsers: pool.NewSystemUser(amountOfUsers),
+		pool:        pool.NewWorkerPool(amountOfUsers),
 	}
 }
 

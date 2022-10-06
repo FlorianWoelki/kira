@@ -16,7 +16,6 @@ type CodeOutput struct {
 type WorkerPool struct {
 	queue        *ConcurrentQueue[WorkType]
 	nWorkers     int
-	queueSize    int
 	workingGroup *sync.WaitGroup
 }
 
@@ -27,10 +26,10 @@ type WorkType struct {
 	ch     chan<- CodeOutput
 }
 
-func NewWorkerPool(nWorkers, queueSize int) *WorkerPool {
+func NewWorkerPool(nWorkers int) *WorkerPool {
 	var wg sync.WaitGroup
 
-	queue := NewConcurrentQueue[WorkType](uint32(queueSize))
+	queue := NewConcurrentQueue[WorkType]()
 
 	for idx := 0; idx < nWorkers; idx++ {
 		wg.Add(1)
@@ -41,7 +40,6 @@ func NewWorkerPool(nWorkers, queueSize int) *WorkerPool {
 		queue:        queue,
 		workingGroup: &wg,
 		nWorkers:     nWorkers,
-		queueSize:    queueSize,
 	}
 }
 

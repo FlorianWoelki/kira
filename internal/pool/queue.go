@@ -114,7 +114,7 @@ type ConcurrentQueue[T any] struct {
 	backend  *Queue[T]
 }
 
-func NewConcurrentQueue[T any](maxSize uint32) *ConcurrentQueue[T] {
+func NewConcurrentQueue[T any]() *ConcurrentQueue[T] {
 	queue := ConcurrentQueue[T]{
 		lock: &sync.Mutex{},
 	}
