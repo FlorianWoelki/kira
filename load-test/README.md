@@ -2,9 +2,9 @@
 ```
 []main.reportsSummary{
   main.reportsSummary{
-    MaxExecutionTimeMs: 364,
-    AvgExecutionTimeMs: 342,
-    MinExecutionTimeMs: 316,
+    MaxExecutionTimeMs: 355,
+    AvgExecutionTimeMs: 329,
+    MinExecutionTimeMs: 185,
     TotalCount:         40,
     GarbageCount:       0,
     FailCount:          0,
@@ -15,9 +15,9 @@
     GarbageReasons:     []string{},
   },
   main.reportsSummary{
-    MaxExecutionTimeMs: 756,
-    AvgExecutionTimeMs: 714,
-    MinExecutionTimeMs: 649,
+    MaxExecutionTimeMs: 779,
+    AvgExecutionTimeMs: 523,
+    MinExecutionTimeMs: 180,
     TotalCount:         80,
     GarbageCount:       0,
     FailCount:          0,
@@ -28,22 +28,9 @@
     GarbageReasons:     []string{},
   },
   main.reportsSummary{
-    MaxExecutionTimeMs: 761,
-    AvgExecutionTimeMs: 717,
-    MinExecutionTimeMs: 651,
-    TotalCount:         80,
-    GarbageCount:       0,
-    FailCount:          0,
-    SuccessCount:       80,
-    SuccessRate:        100,
-    FailRate:           0,
-    GarbageRate:        0,
-    GarbageReasons:     []string{},
-  },
-  main.reportsSummary{
-    MaxExecutionTimeMs: 820,
-    AvgExecutionTimeMs: 768,
-    MinExecutionTimeMs: 684,
+    MaxExecutionTimeMs: 724,
+    AvgExecutionTimeMs: 507,
+    MinExecutionTimeMs: 175,
     TotalCount:         80,
     GarbageCount:       0,
     FailCount:          0,
@@ -58,19 +45,20 @@
 
 # Tested on Digital Ocean Droplet
 
+Notice that these measurements also depend on the network speed where the load tests are sent.
+
 ```
 Architecture: x86_64
-CPUs: 1
-Total Memory: 1.941GiB
-Memory Used: ~23% (measured through Digital Ocean Monitoring)
+CPUs: 2 / Usage: ~50%
+Total Memory: 8GB / Usage: ~8%
 ```
 
 ```
 []main.reportsSummary{
   main.reportsSummary{
-    MaxExecutionTimeMs: 1507,
-    AvgExecutionTimeMs: 1440,
-    MinExecutionTimeMs: 966,
+    MaxExecutionTimeMs: 890,
+    AvgExecutionTimeMs: 800,
+    MinExecutionTimeMs: 450,
     TotalCount:         40,
     GarbageCount:       0,
     FailCount:          0,
@@ -81,9 +69,9 @@ Memory Used: ~23% (measured through Digital Ocean Monitoring)
     GarbageReasons:     []string{},
   },
   main.reportsSummary{
-    MaxExecutionTimeMs: 2872,
-    AvgExecutionTimeMs: 2737,
-    MinExecutionTimeMs: 92,
+    MaxExecutionTimeMs: 1628,
+    AvgExecutionTimeMs: 1151,
+    MinExecutionTimeMs: 96,
     TotalCount:         80,
     GarbageCount:       0,
     FailCount:          0,
@@ -94,22 +82,9 @@ Memory Used: ~23% (measured through Digital Ocean Monitoring)
     GarbageReasons:     []string{},
   },
   main.reportsSummary{
-    MaxExecutionTimeMs: 3041,
-    AvgExecutionTimeMs: 2793,
-    MinExecutionTimeMs: 163,
-    TotalCount:         80,
-    GarbageCount:       0,
-    FailCount:          0,
-    SuccessCount:       80,
-    SuccessRate:        100,
-    FailRate:           0,
-    GarbageRate:        0,
-    GarbageReasons:     []string{},
-  },
-  main.reportsSummary{
-    MaxExecutionTimeMs: 3347,
-    AvgExecutionTimeMs: 3201,
-    MinExecutionTimeMs: 355,
+    MaxExecutionTimeMs: 1605,
+    AvgExecutionTimeMs: 1114,
+    MinExecutionTimeMs: 94,
     TotalCount:         80,
     GarbageCount:       0,
     FailCount:          0,
