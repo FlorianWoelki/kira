@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/florianwoelki/kira/internal/cache"
 	"github.com/florianwoelki/kira/internal/pool"
 	"github.com/google/uuid"
 )
@@ -19,12 +20,14 @@ const (
 type RceEngine struct {
 	systemUsers *pool.SystemUsers
 	pool        *pool.WorkerPool
+	cache       *cache.Cache[pool.CodeOutput]
 }
 
 func NewRceEngine() *RceEngine {
 	return &RceEngine{
 		systemUsers: pool.NewSystemUser(amountOfUsers),
 		pool:        pool.NewWorkerPool(amountOfUsers),
+		cache:       cache.NewCache[pool.CodeOutput](),
 	}
 }
 
@@ -32,6 +35,13 @@ func (rce *RceEngine) action(lang, code string, ch chan<- pool.CodeOutput) {
 	language, err := GetLanguageByName(lang)
 	if err != nil {
 		ch <- pool.CodeOutput{}
+		return
+	}
+
+	cacheOutput, err := rce.cache.Get(language.Name, code)
+
+	if err == nil {
+		ch <- cacheOutput
 		return
 	}
 
@@ -68,13 +78,16 @@ func (rce *RceEngine) action(lang, code string, ch chan<- pool.CodeOutput) {
 
 	output, errorString := rce.executeFile(user.Username, filename, language)
 
-	ch <- pool.CodeOutput{
+	codeOutput := pool.CodeOutput{
 		User:        *user,
 		TempDirName: tempDirName,
 		Result:      output,
 		Error:       errorString,
 	}
 
+	ch <- codeOutput
+
+	rce.cache.Set(language.Name, code, codeOutput)
 	rce.CleanUp(user, tempDirName)
 }
 
