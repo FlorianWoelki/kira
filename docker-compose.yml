@@ -5,7 +5,12 @@ services:
     restart: always
     build: '.'
     container_name: kira
+    depends_on:
+      - cache
     ports:
       - 9090:9090
     cap_add:
       - LINUX_IMMUTABLE
+  cache:
+    image: redis:7.0.5-alpine
+    container_name: cache
