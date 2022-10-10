@@ -11,6 +11,7 @@ services:
       - 9090:9090
     cap_add:
       - LINUX_IMMUTABLE
+      - CAP_SYS_ADMIN
   cache:
     image: redis:7.0.5-alpine
     container_name: cache

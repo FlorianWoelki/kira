@@ -1,1 +1,1 @@
-runuser -u "$1" -- timeout -s KILL 10 go run "$2"
+runuser -u "$1" -- unshare -n -r timeout -s KILL 10 go run "$2"
