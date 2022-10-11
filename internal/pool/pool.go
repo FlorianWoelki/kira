@@ -20,10 +20,11 @@ type WorkerPool struct {
 }
 
 type WorkType struct {
-	lang   string
-	code   string
-	action func(lang, code string, ch chan<- CodeOutput)
-	ch     chan<- CodeOutput
+	lang        string
+	code        string
+	bypassCache bool
+	action      func(lang, code string, bypassCache bool, ch chan<- CodeOutput)
+	ch          chan<- CodeOutput
 }
 
 func NewWorkerPool(nWorkers int) *WorkerPool {
@@ -43,12 +44,13 @@ func NewWorkerPool(nWorkers int) *WorkerPool {
 	}
 }
 
-func (wp *WorkerPool) SubmitJob(lang, code string, action func(lang, code string, ch chan<- CodeOutput), ch chan<- CodeOutput) {
+func (wp *WorkerPool) SubmitJob(lang, code string, bypassCache bool, action func(lang, code string, bypassCache bool, ch chan<- CodeOutput), ch chan<- CodeOutput) {
 	work := WorkType{
-		lang:   lang,
-		code:   code,
-		ch:     ch,
-		action: action,
+		lang:        lang,
+		code:        code,
+		ch:          ch,
+		bypassCache: bypassCache,
+		action:      action,
 	}
 	wp.queue.enqueue(work)
 }
@@ -64,6 +66,6 @@ func poolWorker[T any](wg *sync.WaitGroup, queue *ConcurrentQueue[T], idx int) {
 		}
 
 		work := val.(WorkType)
-		work.action(work.lang, work.code, work.ch)
+		work.action(work.lang, work.code, work.bypassCache, work.ch)
 	}
 }

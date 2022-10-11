@@ -31,18 +31,21 @@ func NewRceEngine() *RceEngine {
 	}
 }
 
-func (rce *RceEngine) action(lang, code string, ch chan<- pool.CodeOutput) {
+func (rce *RceEngine) action(lang, code string, bypassCache bool, ch chan<- pool.CodeOutput) {
 	language, err := GetLanguageByName(lang)
 	if err != nil {
 		ch <- pool.CodeOutput{}
 		return
 	}
 
-	cacheOutput, err := rce.cache.Get(language.Name, code)
+	var cacheOutput pool.CodeOutput
+	if !bypassCache {
+		cacheOutput, err = rce.cache.Get(language.Name, code)
 
-	if err == nil {
-		ch <- cacheOutput
-		return
+		if err == nil {
+			ch <- cacheOutput
+			return
+		}
 	}
 
 	user, err := rce.systemUsers.Acquire()
@@ -87,13 +90,16 @@ func (rce *RceEngine) action(lang, code string, ch chan<- pool.CodeOutput) {
 
 	ch <- codeOutput
 
-	rce.cache.Set(language.Name, code, codeOutput)
+	if !bypassCache {
+		rce.cache.Set(language.Name, code, codeOutput)
+	}
+
 	rce.CleanUp(user, tempDirName)
 }
 
-func (rce *RceEngine) Dispatch(lang, code string) (pool.CodeOutput, error) {
+func (rce *RceEngine) Dispatch(lang, code string, bypassCache bool) (pool.CodeOutput, error) {
 	dataChannel := make(chan pool.CodeOutput)
-	rce.pool.SubmitJob(lang, code, rce.action, dataChannel)
+	rce.pool.SubmitJob(lang, code, bypassCache, rce.action, dataChannel)
 	output := <-dataChannel
 	return output, nil
 }
