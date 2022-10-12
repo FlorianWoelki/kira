@@ -10,6 +10,7 @@ interface CodeExecutionResult {
 const App: React.FC = (): JSX.Element => {
   const codeEditorRef = useRef<any>(null);
   const [codeResult, setCodeResult] = useState<string>('');
+  const [bypassCache, setBypassCache] = useState<boolean>(false);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -19,13 +20,16 @@ const App: React.FC = (): JSX.Element => {
     }
 
     setIsLoading(true);
-    const result = await fetch('http://localhost:9090/execute', {
-      method: 'POST',
-      body: JSON.stringify({
-        language: 'python',
-        content: codeEditorRef.current.getValue(),
-      }),
-    });
+    const result = await fetch(
+      `http://localhost:9090/execute${bypassCache ? '?bypass_cache=true' : ''}`,
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          language: 'python',
+          content: codeEditorRef.current.getValue(),
+        }),
+      },
+    );
 
     const jsonResult: CodeExecutionResult = await result.json();
     if (jsonResult.error) {
@@ -49,7 +53,12 @@ const App: React.FC = (): JSX.Element => {
       </div>
 
       <div className="absolute right-0 bottom-0 mb-4 mr-4 flex items-center space-x-4">
-        <Checkbox id="bypass-checkbox">Bypass Cache</Checkbox>
+        <Checkbox
+          id="bypass-checkbox"
+          onChange={() => setBypassCache((prev) => !prev)}
+        >
+          Bypass Cache
+        </Checkbox>
         <button
           className="flex items-center px-4 py-2 bg-green-600 rounded text-white transition duration-100 ease-in-out hover:bg-green-500 disabled:cursor-not-allowed disabled:bg-opacity-50"
           onClick={runCode}
