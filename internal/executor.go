@@ -67,7 +67,7 @@ func (rce *RceEngine) action(lang, code string, bypassCache bool, ch chan<- pool
 	filename, err := CreateTempFile(user.Username, tempDirName, language.Extension)
 	if err != nil {
 		rce.systemUsers.Release(user.Uid)
-		DeleteTempDir(user.Username, tempDirName)
+		DeleteAll(user.Username)
 		ch <- pool.CodeOutput{}
 		return
 	}
@@ -105,7 +105,7 @@ func (rce *RceEngine) Dispatch(lang, code string, bypassCache bool) (pool.CodeOu
 }
 
 func (rce *RceEngine) CleanUp(user *pool.User, tempDirName string) {
-	DeleteTempDir(user.Username, tempDirName)
+	DeleteAll(user.Username)
 	rce.cleanProcesses(user.Username)
 	rce.restoreUserDir(user.Username)
 	rce.systemUsers.Release(user.Uid)

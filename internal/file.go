@@ -47,6 +47,17 @@ func WriteToFile(filename, code string) error {
 	return nil
 }
 
+func DeleteAll(user string) error {
+	path := fmt.Sprintf("/tmp/%s", user)
+	err := os.RemoveAll(path)
+	if err != nil {
+		fileLogger.Println("Could not delete all directories.")
+		return err
+	}
+
+	return nil
+}
+
 func DeleteTempDir(user, dirName string) error {
 	tempDirName := fmt.Sprintf("/tmp/%s/%s", user, dirName)
 	err := exec.Command("rm", "-rf", tempDirName).Run()
