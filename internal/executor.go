@@ -79,7 +79,8 @@ func (rce *RceEngine) action(lang, code string, bypassCache bool, ch chan<- pool
 		return
 	}
 
-	output, errorString := rce.executeFile(user.Username, filename, language)
+	executableFilename := ExecutableFile(user.Username, tempDirName)
+	output, errorString := rce.executeFile(user.Username, filename, executableFilename, language)
 
 	codeOutput := pool.CodeOutput{
 		User:        *user,
@@ -111,10 +112,10 @@ func (rce *RceEngine) CleanUp(user *pool.User, tempDirName string) {
 	rce.systemUsers.Release(user.Uid)
 }
 
-func (rce *RceEngine) executeFile(currentUser, file string, language Language) (string, string) {
+func (rce *RceEngine) executeFile(currentUser, file, executableFile string, language Language) (string, string) {
 	script := fmt.Sprintf("/kira/languages/%s/run.sh", strings.ToLower(language.Name))
 
-	run := exec.Command("/bin/bash", script, currentUser, file)
+	run := exec.Command("/bin/bash", script, currentUser, file, executableFile)
 	head := exec.Command("head", "--bytes", maxOutputBufferCapacity)
 
 	errBuffer := bytes.Buffer{}

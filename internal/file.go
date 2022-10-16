@@ -19,6 +19,10 @@ func CreateTempDir(user, dirName string) error {
 	return nil
 }
 
+func ExecutableFile(user, dirname string) string {
+	return fmt.Sprintf("/tmp/%s/%s/code", user, dirname)
+}
+
 func CreateTempFile(user, dirName, extension string) (string, error) {
 	filename := fmt.Sprintf("/tmp/%s/%s/code%s", user, dirName, extension)
 
