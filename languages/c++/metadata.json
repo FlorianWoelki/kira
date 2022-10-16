@@ -1,0 +1,6 @@
+{
+  "name": "c++",
+  "version": "10.2.1",
+  "extension": ".cpp",
+  "timeout": 10
+}
