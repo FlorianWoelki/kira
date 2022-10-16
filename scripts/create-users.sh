@@ -5,7 +5,7 @@ for i in {0..49}
 do
   current_user="user$i"
   # Adds a new user into the runners group for to the directory `/tmp/<current_user>`.
-  useradd -m $current_user -G runners -d "/tmp/$current_user"
+  useradd -m $current_user --base-dir "/tmp/$current_user" -G runners --home "/tmp/$current_user"
 
   # Set the limits for the user.
   echo "$current_user soft nproc 256" >> /etc/security/limits.conf

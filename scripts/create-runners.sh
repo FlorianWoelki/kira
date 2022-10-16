@@ -7,6 +7,6 @@ chgrp -R runners /kira/languages/
 
 # Manages control of users running any sort of script.
 # Removes read, write, and execute permission for the runners group.
-chmod g-rwx /kira/languages/
+chmod o-rwx /kira/
 # Add execute privilege for the runners group.
 chmod g+x /kira/languages/
