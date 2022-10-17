@@ -40,8 +40,8 @@ func CreateUsers() error {
 func CreateBinaries() error {
 	scriptsLogger.Println("Creating binaries...")
 	err := filepath.Walk(".", func(path string, info fs.FileInfo, err error) error {
-		if strings.HasSuffix(path, "install.sh") {
-			dir := filepath.Base(filepath.Dir(path))
+		dir := filepath.Base(filepath.Dir(path))
+		if _, ok := LoadedLanguages[dir]; ok && strings.HasSuffix(path, "install.sh") {
 			scriptsLogger.Printf("Downloading %s binaries...", dir)
 			runInstallScript(path, dir)
 		}

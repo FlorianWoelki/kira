@@ -21,7 +21,7 @@ type Language struct {
 	Timeout   int    `json:"timeout" binding:"required"`
 }
 
-func LoadLanguages() error {
+func LoadLanguages(activeLanguages []string) error {
 	languageLogger.Println("Loading languages...")
 	LoadedLanguages = make(map[string]string)
 
@@ -37,7 +37,19 @@ func LoadLanguages() error {
 				return err
 			}
 
-			LoadedLanguages[strings.ToLower(language.Name)] = string(fileBytes)
+			shouldInsert := true
+			if len(activeLanguages) != 0 {
+				shouldInsert = false
+				for _, activeLanguage := range activeLanguages {
+					if strings.EqualFold(activeLanguage, language.Name) {
+						shouldInsert = true
+					}
+				}
+			}
+
+			if shouldInsert {
+				LoadedLanguages[strings.ToLower(language.Name)] = string(fileBytes)
+			}
 		}
 
 		return nil

@@ -15,9 +15,9 @@ import (
 
 var logger *log.Logger = log.New(os.Stdout, "api: ", log.LstdFlags|log.Lshortfile)
 
-// loadOrigins will load all the origins from a specific string.
+// loadEnv will load all the specified values from a specific string.
 // It splits the string by comma and returns the origins.
-func loadOrigins(str string) []string {
+func loadEnv(str string) []string {
 	result := strings.Split(str, ",")
 	for i := 0; i < len(result); i++ {
 		result[i] = strings.TrimSpace(result[i])
@@ -32,7 +32,8 @@ func main() {
 		log.Fatalf("Error occurred while loading env file: %s", err)
 	}
 
-	origins := loadOrigins(os.Getenv("ORIGINS"))
+	origins := loadEnv(os.Getenv("ORIGINS"))
+	activeLanguages := loadEnv(os.Getenv("LANGUAGES"))
 
 	err = internal.CreateRunners()
 	if err != nil {
@@ -44,7 +45,7 @@ func main() {
 		logger.Fatalf("Error while trying to create users: %v+", err)
 	}
 
-	err = internal.LoadLanguages()
+	err = internal.LoadLanguages(activeLanguages)
 	if err != nil {
 		logger.Fatalf("Error while loading languages: %v+", err)
 	}
