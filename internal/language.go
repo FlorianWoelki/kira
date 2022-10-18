@@ -19,7 +19,7 @@ type Language struct {
 	Version   string `json:"version" binding:"required"`
 	Extension string `json:"extension" binding:"required"`
 	Timeout   int    `json:"timeout" binding:"required"`
-	Compiled  bool   `json:"compiled" binding:"required"`
+	Compiled  bool
 }
 
 func LoadLanguages(activeLanguages []string) error {
