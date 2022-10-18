@@ -7,10 +7,12 @@ import (
 )
 
 type CodeOutput struct {
-	User        User
-	TempDirName string
-	Result      string
-	Error       string
+	User          User
+	TempDirName   string
+	CompileResult string
+	CompileError  string
+	RunResult     string
+	RunError      string
 }
 
 type WorkerPool struct {

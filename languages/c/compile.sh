@@ -1,0 +1,1 @@
+gcc -Wall -Wextra -Werror -O2 -std=c99 -pedantic -o "$2" "$1"

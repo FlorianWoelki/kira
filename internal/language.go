@@ -12,18 +12,19 @@ import (
 
 var languageLogger *log.Logger = log.New(os.Stdout, "language: ", log.LstdFlags|log.Lshortfile)
 
-var LoadedLanguages map[string]string
+var LoadedLanguages map[string]Language
 
 type Language struct {
 	Name      string `json:"name" binding:"required"`
 	Version   string `json:"version" binding:"required"`
 	Extension string `json:"extension" binding:"required"`
 	Timeout   int    `json:"timeout" binding:"required"`
+	Compiled  bool   `json:"compiled" binding:"required"`
 }
 
 func LoadLanguages(activeLanguages []string) error {
 	languageLogger.Println("Loading languages...")
-	LoadedLanguages = make(map[string]string)
+	LoadedLanguages = make(map[string]Language)
 
 	err := filepath.Walk("./languages", func(path string, info fs.FileInfo, err error) error {
 		if strings.HasSuffix(path, "metadata.json") {
@@ -37,6 +38,10 @@ func LoadLanguages(activeLanguages []string) error {
 				return err
 			}
 
+			dir := filepath.Dir(path)
+			_, err = os.Stat(fmt.Sprintf("%s/%s", dir, "compile.sh"))
+			language.Compiled = err == nil
+
 			shouldInsert := true
 			if len(activeLanguages) != 0 {
 				shouldInsert = false
@@ -48,7 +53,7 @@ func LoadLanguages(activeLanguages []string) error {
 			}
 
 			if shouldInsert {
-				LoadedLanguages[strings.ToLower(language.Name)] = string(fileBytes)
+				LoadedLanguages[strings.ToLower(language.Name)] = language
 			}
 		}
 
@@ -70,15 +75,7 @@ func GetLanguages() ([]Language, error) {
 
 	result := make([]Language, 0)
 	for _, languageValue := range LoadedLanguages {
-		serialized := []byte(languageValue)
-		language := Language{}
-		err := json.Unmarshal(serialized, &language)
-
-		if err != nil {
-			return nil, err
-		}
-
-		result = append(result, language)
+		result = append(result, languageValue)
 	}
 
 	return result, nil
@@ -87,13 +84,8 @@ func GetLanguages() ([]Language, error) {
 func GetLanguageByName(key string) (Language, error) {
 	find, ok := LoadedLanguages[strings.ToLower(key)]
 	if !ok {
-		return Language{}, fmt.Errorf("could not find language with key: %s", find)
+		return Language{}, fmt.Errorf("could not find language with key: %s", key)
 	}
 
-	language := Language{}
-	if err := json.Unmarshal([]byte(find), &language); err != nil {
-		return Language{}, err
-	}
-
-	return language, nil
+	return find, nil
 }

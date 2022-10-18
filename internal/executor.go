@@ -80,13 +80,25 @@ func (rce *RceEngine) action(lang, code string, bypassCache bool, ch chan<- pool
 	}
 
 	executableFilename := ExecutableFile(user.Username, tempDirName)
-	output, errorString := rce.executeFile(user.Username, filename, executableFilename, language)
+
+	var compileOutput, compileErrorString string
+	var runOutput, runErrorString string
+
+	if language.Compiled {
+		compileOutput, compileErrorString = rce.compileFile(filename, executableFilename, language)
+	}
+
+	if len(compileErrorString) == 0 {
+		runOutput, runErrorString = rce.executeFile(user.Username, filename, executableFilename, language)
+	}
 
 	codeOutput := pool.CodeOutput{
-		User:        *user,
-		TempDirName: tempDirName,
-		Result:      output,
-		Error:       errorString,
+		User:          *user,
+		TempDirName:   tempDirName,
+		CompileResult: compileOutput,
+		CompileError:  compileErrorString,
+		RunResult:     runOutput,
+		RunError:      runErrorString,
 	}
 
 	ch <- codeOutput
@@ -112,10 +124,39 @@ func (rce *RceEngine) CleanUp(user *pool.User, tempDirName string) {
 	rce.systemUsers.Release(user.Uid)
 }
 
-func (rce *RceEngine) executeFile(currentUser, file, executableFile string, language Language) (string, string) {
-	script := fmt.Sprintf("/kira/languages/%s/run.sh", strings.ToLower(language.Name))
+func (rce *RceEngine) compileFile(file, executableFile string, language Language) (string, string) {
+	compileScript := fmt.Sprintf("/kira/languages/%s/compile.sh", strings.ToLower(language.Name))
 
-	run := exec.Command("/bin/bash", script, currentUser, file, executableFile)
+	compile := exec.Command("/bin/bash", compileScript, file, executableFile)
+	head := exec.Command("head", "--bytes", maxOutputBufferCapacity)
+
+	errBuffer := bytes.Buffer{}
+	compile.Stderr = &errBuffer
+
+	head.Stdin, _ = compile.StdoutPipe()
+	headOutput := bytes.Buffer{}
+	head.Stdout = &headOutput
+
+	_ = compile.Start()
+	_ = head.Start()
+	_ = compile.Wait()
+	_ = head.Wait()
+
+	result := ""
+
+	if headOutput.Len() > 0 {
+		result = headOutput.String()
+	} else if headOutput.Len() == 0 && errBuffer.Len() == 0 {
+		result = headOutput.String()
+	}
+
+	return result, errBuffer.String()
+}
+
+func (rce *RceEngine) executeFile(currentUser, file, executableFile string, language Language) (string, string) {
+	runScript := fmt.Sprintf("/kira/languages/%s/run.sh", strings.ToLower(language.Name))
+
+	run := exec.Command("/bin/bash", runScript, currentUser, file, executableFile)
 	head := exec.Command("head", "--bytes", maxOutputBufferCapacity)
 
 	errBuffer := bytes.Buffer{}
@@ -137,8 +178,6 @@ func (rce *RceEngine) executeFile(currentUser, file, executableFile string, lang
 	} else if headOutput.Len() == 0 && errBuffer.Len() == 0 {
 		result = headOutput.String()
 	}
-
-	//fmt.Printf("user %s with error %s\n", currentUser, &errBuffer)
 
 	return result, errBuffer.String()
 }
