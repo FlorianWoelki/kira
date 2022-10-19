@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"sync"
+	"time"
 )
 
 type CodeOutput struct {
@@ -11,8 +12,10 @@ type CodeOutput struct {
 	TempDirName   string
 	CompileResult string
 	CompileError  string
+	CompileTime   time.Duration
 	RunResult     string
 	RunError      string
+	RunTime       time.Duration
 }
 
 type WorkerPool struct {
