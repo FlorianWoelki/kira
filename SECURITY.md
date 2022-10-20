@@ -69,3 +69,15 @@ with urllib.request.urlopen("https://somecode.com") as response:
 ```
 
 That's why the fix for this exploit was to disable the network interface completely.
+
+# Writing to other files
+
+A user that uses this service could always write to other main files that were not part of their code directory. This was a crucial bug, because malicious code could have been added to other files.
+
+Example Code:
+```py
+f = open("./languages/python/run.sh", "w")
+print(f.write('Test'))
+```
+
+This has been fixed by logging into the current user's shell and executing the files from there.
