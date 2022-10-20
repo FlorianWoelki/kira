@@ -81,33 +81,22 @@ func (rce *RceEngine) action(lang, code string, bypassCache bool, ch chan<- pool
 	}
 
 	executableFilename := ExecutableFile(user.Username, tempDirName)
-
-	var compileOutput, compileErrorString string
-	var runOutput, runErrorString string
-	var compileTime time.Duration
-	var runTime time.Duration
+	codeOutput := pool.CodeOutput{User: *user, TempDirName: tempDirName}
 
 	if language.Compiled {
 		now := time.Now()
-		compileOutput, compileErrorString = rce.compileFile(filename, executableFilename, language)
-		compileTime = time.Since(now)
+		compileOutput, compileError := rce.compileFile(filename, executableFilename, language)
+		codeOutput.CompileResult = compileOutput
+		codeOutput.CompileError = compileError
+		codeOutput.CompileTime = time.Since(now)
 	}
 
-	if len(compileErrorString) == 0 {
+	if len(codeOutput.CompileError) == 0 {
 		now := time.Now()
-		runOutput, runErrorString = rce.executeFile(user.Username, filename, executableFilename, language)
-		runTime = time.Since(now)
-	}
-
-	codeOutput := pool.CodeOutput{
-		User:          *user,
-		TempDirName:   tempDirName,
-		CompileResult: compileOutput,
-		CompileError:  compileErrorString,
-		CompileTime:   compileTime,
-		RunResult:     runOutput,
-		RunError:      runErrorString,
-		RunTime:       runTime,
+		runOutput, runError := rce.executeFile(user.Username, filename, executableFilename, language)
+		codeOutput.RunResult = runOutput
+		codeOutput.RunError = runError
+		codeOutput.RunTime = time.Since(now)
 	}
 
 	ch <- codeOutput
