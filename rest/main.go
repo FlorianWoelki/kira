@@ -77,6 +77,19 @@ func main() {
 
 	rce := internal.NewRceEngine()
 
+	// Create connection to MongoDB.
+	db := internal.NewDatabase()
+	err = db.Connect()
+	if err != nil {
+		logger.Fatalf("Error while connecting to mongo: %v+", err)
+	}
+	err = db.InitDatabase()
+	if err != nil {
+		logger.Fatalf("Error while initializing mongo database: %v+", err)
+	}
+	defer db.Disconnect()
+
+	// Define REST endpoints.
 	e.GET("/languages", routes.Languages)
 	e.POST("/execute", func(c echo.Context) error {
 		return routes.Execute(c, rce)
