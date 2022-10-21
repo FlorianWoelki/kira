@@ -74,6 +74,14 @@ func main() {
 		AllowOrigins: origins,
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 	}))
+	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
+		LogURI:    true,
+		LogStatus: true,
+		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
+			logger.Println("request", v.URI, v.Status)
+			return nil
+		},
+	}))
 
 	rce := internal.NewRceEngine()
 
