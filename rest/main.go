@@ -91,10 +91,14 @@ func main() {
 	if err != nil {
 		logger.Fatalf("Error while connecting to mongo: %v+", err)
 	}
+	logger.Println("Connected to MongoDB database.")
+
 	err = db.InitDatabase()
 	if err != nil {
 		logger.Fatalf("Error while initializing mongo database: %v+", err)
 	}
+	logger.Println("MongoDB database and collections initialized.")
+
 	defer db.Disconnect()
 
 	// Define REST endpoints.

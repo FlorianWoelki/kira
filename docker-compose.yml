@@ -19,6 +19,7 @@ services:
     restart: always
     volumes:
       - ./logs:/data/db
+    command: mongod --quiet --logpath /dev/null
   cache:
     image: redis:7.0.5-alpine
     container_name: cache
