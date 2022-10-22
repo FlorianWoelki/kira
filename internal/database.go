@@ -3,8 +3,6 @@ package internal
 import (
 	"context"
 
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -39,18 +37,21 @@ func (d *Database) Connect() error {
 
 func (d *Database) InitDatabase() error {
 	db := d.client.Database("kira")
-	err := db.CreateCollection(d.ctx, "logs")
-	if err != nil {
-		return err
+	coll := db.Collection("logs")
+	if coll == nil {
+		err := db.CreateCollection(d.ctx, "logs")
+		if err != nil {
+			return err
+		}
 	}
 
 	d.db = db
 	return nil
 }
 
-func (d *Database) Insert(log primitive.E) (interface{}, error) {
+func (d *Database) Insert(log interface{}) (interface{}, error) {
 	logs := d.db.Collection("logs")
-	result, err := logs.InsertOne(d.ctx, bson.D{log})
+	result, err := logs.InsertOne(d.ctx, log)
 	if err != nil {
 		return nil, err
 	}
