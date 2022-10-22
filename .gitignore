@@ -18,6 +18,7 @@
 # Generated files
 **/volume/*
 kira
+logs
 __pycache__
 
 .DS_Store

@@ -9,7 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-const mongoURI = "mongodb://localhost:27017"
+const mongoURI = "mongodb://database:27017"
 
 type Database struct {
 	ctx    context.Context

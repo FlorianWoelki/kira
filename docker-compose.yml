@@ -7,11 +7,18 @@ services:
     container_name: kira
     depends_on:
       - cache
+      - database
     ports:
       - 9090:9090
     cap_add:
       - LINUX_IMMUTABLE
       - CAP_SYS_ADMIN
+  database:
+    image: mongo:latest
+    container_name: database
+    restart: always
+    volumes:
+      - ./logs:/data/db
   cache:
     image: redis:7.0.5-alpine
     container_name: cache
