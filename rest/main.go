@@ -13,6 +13,8 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
+var logger *log.Logger = log.New(os.Stdout, "api: ", log.LstdFlags|log.Lshortfile)
+
 // loadEnv will load all the specified values from a specific string.
 // It splits the string by comma and returns the origins.
 func loadEnv(str string) []string {
@@ -27,7 +29,7 @@ func loadEnv(str string) []string {
 func main() {
 	err := godotenv.Load("rest/local.env")
 	if err != nil {
-		log.Fatalf("Error occurred while loading env file: %s", err)
+		logger.Fatalf("Error occurred while loading env file: %s", err)
 	}
 
 	origins := loadEnv(os.Getenv("ORIGINS"))
@@ -35,22 +37,22 @@ func main() {
 
 	err = internal.CreateRunners()
 	if err != nil {
-		log.Fatalf("Error while trying to create runners: %v+", err)
+		logger.Fatalf("Error while trying to create runners: %v+", err)
 	}
 
 	err = internal.CreateUsers()
 	if err != nil {
-		log.Fatalf("Error while trying to create users: %v+", err)
+		logger.Fatalf("Error while trying to create users: %v+", err)
 	}
 
 	err = internal.LoadLanguages(activeLanguages)
 	if err != nil {
-		log.Fatalf("Error while loading languages: %v+", err)
+		logger.Fatalf("Error while loading languages: %v+", err)
 	}
 
 	err = internal.CreateBinaries()
 	if err != nil {
-		log.Fatalf("Error while creating binaries: %v+", err)
+		logger.Fatalf("Error while creating binaries: %v+", err)
 	}
 
 	e := echo.New()
@@ -84,9 +86,9 @@ func main() {
 	rce := internal.NewRceEngine()
 
 	if _, err = internal.NewLogger(); err != nil {
-		log.Fatalf("Error while creating logger: %v+", err)
+		logger.Fatalf("Error while creating logger: %v+", err)
 	}
-	log.Println("Successfully created logger and connected to database.")
+	logger.Println("Successfully created logger and connected to database.")
 	defer internal.CloseLogger()
 
 	// Define REST endpoints.
