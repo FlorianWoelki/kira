@@ -12,12 +12,13 @@ import (
 const mongoURI = "mongodb://database:27017"
 
 type Database struct {
-	client *mongo.Client
-	db     *mongo.Database
+	client         *mongo.Client
+	db             *mongo.Database
+	collectionName string
 }
 
-func NewDatabase() *Database {
-	return &Database{}
+func NewDatabase(collectionName string) *Database {
+	return &Database{collectionName: collectionName}
 }
 
 func (d *Database) Connect() error {
@@ -44,9 +45,9 @@ func (d *Database) Connect() error {
 
 func (d *Database) InitDatabase() error {
 	db := d.client.Database("kira")
-	coll := db.Collection("logs")
+	coll := db.Collection(d.collectionName)
 	if coll == nil {
-		err := db.CreateCollection(context.TODO(), "logs")
+		err := db.CreateCollection(context.Background(), d.collectionName)
 		if err != nil {
 			return err
 		}
@@ -57,8 +58,8 @@ func (d *Database) InitDatabase() error {
 }
 
 func (d *Database) Insert(log interface{}) (interface{}, error) {
-	logs := d.db.Collection("logs")
-	result, err := logs.InsertOne(context.TODO(), log)
+	logs := d.db.Collection(d.collectionName)
+	result, err := logs.InsertOne(context.Background(), log)
 	if err != nil {
 		return nil, err
 	}

@@ -10,6 +10,7 @@ require (
 	github.com/labstack/echo/v4 v4.9.0
 	github.com/yudai/pp v2.0.1+incompatible
 	go.mongodb.org/mongo-driver v1.10.3
+	go.uber.org/zap v1.16.0
 )
 
 require (
@@ -36,6 +37,8 @@ require (
 	github.com/xdg-go/scram v1.1.1 // indirect
 	github.com/xdg-go/stringprep v1.0.3 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d // indirect
+	go.uber.org/atomic v1.7.0 // indirect
+	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/crypto v0.0.0-20220926161630-eccd6366d1be // indirect
 	golang.org/x/exp v0.0.0-20210916165020-5cb4fee858ee // indirect
 	golang.org/x/net v0.0.0-20220927171203-f486391704dc // indirect

@@ -13,8 +13,6 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-var logger *log.Logger = log.New(os.Stdout, "api: ", log.LstdFlags|log.Lshortfile)
-
 // loadEnv will load all the specified values from a specific string.
 // It splits the string by comma and returns the origins.
 func loadEnv(str string) []string {
@@ -37,22 +35,22 @@ func main() {
 
 	err = internal.CreateRunners()
 	if err != nil {
-		logger.Fatalf("Error while trying to create runners: %v+", err)
+		log.Fatalf("Error while trying to create runners: %v+", err)
 	}
 
 	err = internal.CreateUsers()
 	if err != nil {
-		logger.Fatalf("Error while trying to create users: %v+", err)
+		log.Fatalf("Error while trying to create users: %v+", err)
 	}
 
 	err = internal.LoadLanguages(activeLanguages)
 	if err != nil {
-		logger.Fatalf("Error while loading languages: %v+", err)
+		log.Fatalf("Error while loading languages: %v+", err)
 	}
 
 	err = internal.CreateBinaries()
 	if err != nil {
-		logger.Fatalf("Error while creating binaries: %v+", err)
+		log.Fatalf("Error while creating binaries: %v+", err)
 	}
 
 	e := echo.New()
@@ -78,28 +76,18 @@ func main() {
 		LogURI:    true,
 		LogStatus: true,
 		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
-			logger.Println("request", v.URI, v.Status)
+			log.Println("request", v.URI, v.Status)
 			return nil
 		},
 	}))
 
 	rce := internal.NewRceEngine()
 
-	// Create connection to MongoDB.
-	db := internal.NewDatabase()
-	err = db.Connect()
-	if err != nil {
-		logger.Fatalf("Error while connecting to mongo: %v+", err)
+	if _, err = internal.NewLogger(); err != nil {
+		log.Fatalf("Error while creating logger: %v+", err)
 	}
-	logger.Println("Connected to MongoDB database.")
-
-	err = db.InitDatabase()
-	if err != nil {
-		logger.Fatalf("Error while initializing mongo database: %v+", err)
-	}
-	logger.Println("MongoDB database and collections initialized.")
-
-	defer db.Disconnect()
+	log.Println("Successfully created logger and connected to database.")
+	defer internal.CloseLogger()
 
 	// Define REST endpoints.
 	e.GET("/languages", routes.Languages)
