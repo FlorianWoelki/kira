@@ -2,15 +2,16 @@ package internal
 
 import (
 	"context"
+	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
 const mongoURI = "mongodb://database:27017"
 
 type Database struct {
-	ctx    context.Context
 	client *mongo.Client
 	db     *mongo.Database
 }
@@ -24,13 +25,19 @@ func (d *Database) Connect() error {
 	if err != nil {
 		return err
 	}
-	ctx := context.Background()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	err = client.Connect(ctx)
 	if err != nil {
 		return err
 	}
 
-	d.ctx = ctx
+	err = client.Ping(context.Background(), readpref.Primary())
+	if err != nil {
+		return err
+	}
+
 	d.client = client
 	return nil
 }
@@ -39,7 +46,7 @@ func (d *Database) InitDatabase() error {
 	db := d.client.Database("kira")
 	coll := db.Collection("logs")
 	if coll == nil {
-		err := db.CreateCollection(d.ctx, "logs")
+		err := db.CreateCollection(context.TODO(), "logs")
 		if err != nil {
 			return err
 		}
@@ -51,7 +58,7 @@ func (d *Database) InitDatabase() error {
 
 func (d *Database) Insert(log interface{}) (interface{}, error) {
 	logs := d.db.Collection("logs")
-	result, err := logs.InsertOne(d.ctx, log)
+	result, err := logs.InsertOne(context.TODO(), log)
 	if err != nil {
 		return nil, err
 	}
@@ -60,5 +67,5 @@ func (d *Database) Insert(log interface{}) (interface{}, error) {
 }
 
 func (d *Database) Disconnect() {
-	d.client.Disconnect(d.ctx)
+	d.client.Disconnect(context.Background())
 }
