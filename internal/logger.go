@@ -9,13 +9,13 @@ import (
 )
 
 var (
-	logger *zap.Logger
+	Logger *zap.Logger
 	db     *Database
 )
 
 func NewLogger() (*zap.Logger, error) {
-	if logger != nil {
-		return logger, nil
+	if Logger != nil {
+		return Logger, nil
 	}
 
 	db = NewDatabase("logs")
@@ -39,20 +39,22 @@ func NewLogger() (*zap.Logger, error) {
 		zapcore.NewCore(encoder, writer, defaultLogLevel),
 	)
 
-	logger = zap.New(core, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel))
-	return logger, nil
+	Logger = zap.New(core, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel))
+	return Logger, nil
 }
 
 func CloseLogger() {
-	logger = nil
+	Logger = nil
 	db.Disconnect()
 }
 
 type logValues struct {
-	Level  string `json:"level"`
-	Ts     string `json:"ts"`
-	Caller string `json:"caller"`
-	Msg    string `json:"msg"`
+	Level        string `json:"level"`
+	Ts           string `json:"ts"`
+	Caller       string `json:"caller"`
+	Msg          string `json:"msg"`
+	RequestBody  string `json:"requestBody"`
+	ResponseBody string `json:"responseBody"`
 }
 
 type mongoWriter struct {
@@ -71,10 +73,12 @@ func (mw mongoWriter) Write(p []byte) (n int, err error) {
 	}
 
 	if _, err := mw.database.Insert(bson.M{
-		"level":   value.Level,
-		"created": value.Ts,
-		"caller":  value.Caller,
-		"message": value.Msg,
+		"level":        value.Level,
+		"created":      value.Ts,
+		"caller":       value.Caller,
+		"message":      value.Msg,
+		"requestBody":  value.RequestBody,
+		"responseBody": value.ResponseBody,
 	}); err != nil {
 		return 0, err
 	}

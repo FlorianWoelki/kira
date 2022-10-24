@@ -11,6 +11,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"go.uber.org/zap"
 )
 
 var logger *log.Logger = log.New(os.Stdout, "api: ", log.LstdFlags|log.Lshortfile)
@@ -74,13 +75,12 @@ func main() {
 		AllowOrigins: origins,
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 	}))
-	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
-		LogURI:    true,
-		LogStatus: true,
-		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
-			log.Println("request", v.URI, v.Status)
-			return nil
-		},
+	e.Use(middleware.BodyDump(func(ctx echo.Context, reqBody, resBody []byte) {
+		internal.Logger.Info(
+			"request",
+			zap.String("requestBody", string(reqBody)),
+			zap.String("responseBody", string(resBody)),
+		)
 	}))
 
 	rce := internal.NewRceEngine()
