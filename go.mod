@@ -8,6 +8,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/joho/godotenv v1.4.0
 	github.com/labstack/echo/v4 v4.9.0
+	github.com/robfig/cron/v3 v3.0.1
 	github.com/yudai/pp v2.0.1+incompatible
 	go.mongodb.org/mongo-driver v1.10.3
 	go.uber.org/zap v1.16.0

@@ -43,7 +43,7 @@ func (d *Database) Connect() error {
 	return nil
 }
 
-func (d *Database) InitDatabase() error {
+func (d *Database) CreateCollection() error {
 	db := d.client.Database("kira")
 	coll := db.Collection(d.collectionName)
 	if coll == nil {
