@@ -1,1 +1,1 @@
-runuser -l "$1" -c -- "unshare -n -r timeout -s KILL 10 go run $2"
+runuser -l "$1" -c -- "unshare -n -r timeout -s KILL 10 /usr/local/go/bin/go run $2"
