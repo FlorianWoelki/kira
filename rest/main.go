@@ -85,7 +85,7 @@ func main() {
 
 	rce := internal.NewRceEngine()
 
-	if _, err = internal.NewLogger(); err != nil {
+	if _, err = internal.NewLogger(internal.ROTATE_WEEK); err != nil {
 		logger.Fatalf("Error while creating logger: %v+", err)
 	}
 	logger.Println("Successfully created logger and connected to database.")

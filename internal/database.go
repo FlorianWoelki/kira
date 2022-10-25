@@ -17,8 +17,8 @@ type Database struct {
 	collectionName string
 }
 
-func NewDatabase(collectionName string) *Database {
-	return &Database{collectionName: collectionName}
+func NewDatabase() *Database {
+	return &Database{}
 }
 
 func (d *Database) Connect() error {
@@ -43,7 +43,9 @@ func (d *Database) Connect() error {
 	return nil
 }
 
-func (d *Database) CreateCollection() error {
+func (d *Database) CreateCollection(collectionName string) error {
+	d.collectionName = collectionName
+
 	db := d.client.Database("kira")
 	coll := db.Collection(d.collectionName)
 	if coll == nil {

@@ -2,35 +2,63 @@ package internal
 
 import (
 	"encoding/json"
+	"fmt"
+	"log"
+	"os"
 	"time"
 
+	"github.com/robfig/cron/v3"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-var (
-	Logger         *zap.Logger
-	db             *Database
-	collectionName string
+const (
+	ROTATE_MINUTE = "*/1 * * * *"
+	ROTATE_HOUR   = "0 * * * *"
+	ROTATE_DAY    = "0 0 * * *"
+	ROTATE_WEEK   = "0 0 * * 0"
+	ROTATE_MONTH  = "0 0 1 * *"
 )
 
-func NewLogger() (*zap.Logger, error) {
+var (
+	Logger  *zap.Logger
+	db      *Database
+	cronJob *cron.Cron
+	logger  *log.Logger = log.New(os.Stdout, "language: ", log.LstdFlags|log.Lshortfile)
+)
+
+func NewLogger(rotation string) (*zap.Logger, error) {
 	if Logger != nil {
 		return Logger, nil
 	}
 
-	collectionName = "logs_" + time.Now().Format(time.RFC3339)
-	db = NewDatabase(collectionName)
+	db = NewDatabase()
 	err := db.Connect()
 	if err != nil {
 		return nil, err
 	}
 
-	err = db.CreateCollection()
+	collectionName := fmt.Sprintf("logs_%d", time.Now().UnixMilli())
+	err = db.CreateCollection(collectionName)
 	if err != nil {
 		return nil, err
 	}
+
+	// Create cron job for rotating collection.
+	cronJob = cron.New()
+	_, err = cronJob.AddFunc(rotation, func() {
+		rotationName, err := rotateDatabase()
+		if err != nil {
+			logger.Printf("Something went wrong while executing cron job: %v+\n", err)
+		}
+
+		logger.Printf("Rotating database to %s...", rotationName)
+	})
+	if err != nil {
+		return nil, err
+	}
+	cronJob.Start()
 
 	config := zap.NewProductionEncoderConfig()
 	config.EncodeTime = zapcore.ISO8601TimeEncoder
@@ -46,13 +74,14 @@ func NewLogger() (*zap.Logger, error) {
 	return Logger, nil
 }
 
-func RotateDatabase() error {
-	collectionName = "logs_" + time.Now().Format(time.RFC3339)
-	return db.CreateCollection()
+func rotateDatabase() (string, error) {
+	collectionName := fmt.Sprintf("logs_%d", time.Now().UnixNano())
+	return collectionName, db.CreateCollection(collectionName)
 }
 
 func CloseLogger() {
 	Logger = nil
+	cronJob.Stop()
 	db.Disconnect()
 }
 
