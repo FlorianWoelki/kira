@@ -79,6 +79,12 @@ export const MonacoEditor = forwardRef<
       editorRef.current!.style.height = '100%';
     });
 
+    const handleResize = () => {
+      editor.layout({} as monaco.editor.IDimension);
+    };
+
+    window.addEventListener('resize', handleResize);
+
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
       onCtrlCmdEnter?.();
     });
@@ -87,6 +93,7 @@ export const MonacoEditor = forwardRef<
       editor;
 
     return () => {
+      window.removeEventListener('resize', handleResize);
       editor.dispose();
     };
   }, []);
