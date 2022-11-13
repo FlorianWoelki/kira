@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { MonacoEditor } from './Editor';
+import { MonacoEditor } from './MonacoEditor';
 
 interface CodeExecutionResult {
   compileOutput: string;
@@ -56,21 +56,26 @@ const App: React.FC = (): JSX.Element => {
           <div className="rounded-lg bg-white">
             <MonacoEditor
               value="print('Hello World')"
+              onCtrlCmdEnter={runCode}
               ref={codeEditorRef}
             ></MonacoEditor>
           </div>
           <div className="rounded-lg bg-white p-4">
             <p className="font-semibold">Output:</p>
-            {!codeResult || codeResult?.compileError || codeResult?.runError ? (
-              <>
-                <p>Compile Error: {codeResult?.compileError}</p>
-                <p>Run Error: {codeResult?.runError}</p>
-              </>
+            {codeResult ? (
+              codeResult.compileError || codeResult.runError ? (
+                <>
+                  <p>Compile Error: {codeResult.compileError}</p>
+                  <p>Run Error: {codeResult.runError}</p>
+                </>
+              ) : (
+                <>
+                  <p>{codeResult.runOutput}</p>
+                  <p>Time: {codeResult.runTime}</p>
+                </>
+              )
             ) : (
-              <>
-                <p>{codeResult.runOutput}</p>
-                <p>Time: {codeResult.runTime}</p>
-              </>
+              ''
             )}
           </div>
         </div>

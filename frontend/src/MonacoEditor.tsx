@@ -11,11 +11,7 @@ import {
   useState,
 } from 'react';
 
-const createEditor = (
-  value: string,
-  editorEl: HTMLDivElement,
-  statusEl: HTMLDivElement,
-) => {
+const createEditor = (value: string, editorEl: HTMLDivElement) => {
   const editor = monaco.editor.create(editorEl, {
     value,
     language: 'python',
@@ -31,7 +27,6 @@ const createEditor = (
     automaticLayout: true,
     smoothScrolling: true,
     snippetSuggestions: 'none',
-    suggestOnTriggerCharacters: false,
     wordBasedSuggestions: false,
     wordWrap: 'bounded',
     wordWrapColumn: 80,
@@ -39,10 +34,12 @@ const createEditor = (
     renderLineHighlight: 'none',
     hideCursorInOverviewRuler: true,
     overviewRulerBorder: false,
+    minimap: {
+      enabled: false,
+    },
     scrollbar: {
       horizontal: 'hidden',
-      verticalSliderSize: 5,
-      useShadows: false,
+      vertical: 'hidden',
     },
   });
 
@@ -53,20 +50,20 @@ const createEditor = (
 
 interface MonacoEditorProps {
   value: string;
+  onCtrlCmdEnter?: () => void;
 }
 
 export const MonacoEditor = forwardRef<
   monaco.editor.IStandaloneCodeEditor,
   MonacoEditorProps
->(({ value }, ref): JSX.Element => {
+>(({ value, onCtrlCmdEnter }, ref): JSX.Element => {
   const editorRef = useRef<HTMLDivElement | null>(null);
-  const statusRef = useRef<HTMLDivElement | null>(null);
 
   const [editor, setEditor] =
     useState<monaco.editor.IStandaloneCodeEditor | null>(null);
 
   useEffect(() => {
-    if (!editorRef.current || !statusRef.current) {
+    if (!editorRef.current) {
       return;
     }
 
@@ -74,16 +71,16 @@ export const MonacoEditor = forwardRef<
       monaco.editor.remeasureFonts();
     });
 
-    const { editor } = createEditor(
-      value,
-      editorRef.current,
-      statusRef.current,
-    );
+    const { editor } = createEditor(value, editorRef.current);
     setEditor(editor);
 
     editor.onDidLayoutChange(() => {
       editor.focus();
       editorRef.current!.style.height = '100%';
+    });
+
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+      onCtrlCmdEnter?.();
     });
 
     (ref as MutableRefObject<monaco.editor.IStandaloneCodeEditor>).current =
@@ -94,13 +91,5 @@ export const MonacoEditor = forwardRef<
     };
   }, []);
 
-  return (
-    <>
-      <div className="w-full p-4" ref={editorRef}></div>
-      <div
-        className="vim-status absolute inset-x-0 bottom-0 px-4 py-2 font-mono text-base"
-        ref={statusRef}
-      ></div>
-    </>
-  );
+  return <div className="w-full p-4" ref={editorRef}></div>;
 });
