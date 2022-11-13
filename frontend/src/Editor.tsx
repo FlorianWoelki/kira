@@ -83,6 +83,7 @@ export const MonacoEditor = forwardRef<
 
     editor.onDidLayoutChange(() => {
       editor.focus();
+      editorRef.current!.style.height = '100%';
     });
 
     (ref as MutableRefObject<monaco.editor.IStandaloneCodeEditor>).current =
@@ -95,11 +96,7 @@ export const MonacoEditor = forwardRef<
 
   return (
     <>
-      <div
-        className="h-full w-full"
-        style={{ paddingBottom: '138px' }}
-        ref={editorRef}
-      ></div>
+      <div className="w-full p-4" ref={editorRef}></div>
       <div
         className="vim-status absolute inset-x-0 bottom-0 px-4 py-2 font-mono text-base"
         ref={statusRef}
