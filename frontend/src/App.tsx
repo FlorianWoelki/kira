@@ -39,6 +39,10 @@ const App: React.FC = (): JSX.Element => {
     setIsLoading(false);
   };
 
+  const normalizeOutput = (value: string): string[] => {
+    return value.split('\n');
+  };
+
   return (
     <div className="relative antialiased h-screen">
       <div className="flex flex-col h-full">
@@ -52,7 +56,10 @@ const App: React.FC = (): JSX.Element => {
           </button>
         </div>
 
-        <div className="grid grid-cols-2 bg-gray-200 gap-2 p-2 h-full">
+        <div
+          className="grid grid-cols-2 bg-gray-200 gap-2 p-2"
+          style={{ height: 'calc(100% - 56px)' }}
+        >
           <div className="rounded-lg bg-white">
             <MonacoEditor
               value="print('Hello World')"
@@ -60,7 +67,7 @@ const App: React.FC = (): JSX.Element => {
               ref={codeEditorRef}
             ></MonacoEditor>
           </div>
-          <div className="rounded-lg bg-white p-4">
+          <div className="rounded-lg bg-white p-4 overflow-auto h-full">
             <p className="font-semibold">Output:</p>
             {codeResult ? (
               codeResult.compileError || codeResult.runError ? (
@@ -70,8 +77,12 @@ const App: React.FC = (): JSX.Element => {
                 </>
               ) : (
                 <>
-                  <p>{codeResult.runOutput}</p>
-                  <p>Time: {codeResult.runTime}</p>
+                  <p className="italic text-sm mb-4">
+                    Time: {codeResult.runTime}ms
+                  </p>
+                  {normalizeOutput(codeResult.runOutput).map((v, i) => (
+                    <p key={i}>{v}</p>
+                  ))}
                 </>
               )
             ) : (
