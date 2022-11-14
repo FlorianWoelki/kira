@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { CodeMirrorEditor } from './CodeMirrorEditor';
 import { MonacoEditor } from './MonacoEditor';
 
 interface CodeExecutionResult {
@@ -61,11 +62,12 @@ const App: React.FC = (): JSX.Element => {
           style={{ height: 'calc(100% - 56px)' }}
         >
           <div className="rounded-lg bg-white">
-            <MonacoEditor
+            <CodeMirrorEditor></CodeMirrorEditor>
+            {/* <MonacoEditor
               value="print('Hello World')"
               onCtrlCmdEnter={runCode}
               ref={codeEditorRef}
-            ></MonacoEditor>
+            ></MonacoEditor> */}
           </div>
           <div className="rounded-lg bg-white p-4 overflow-auto h-full">
             <p className="font-semibold">Output:</p>
