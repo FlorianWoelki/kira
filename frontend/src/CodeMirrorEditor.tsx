@@ -2,7 +2,7 @@ import { EditorView, basicSetup } from 'codemirror';
 import { indentWithTab } from '@codemirror/commands';
 import { python } from '@codemirror/lang-python';
 import { useEffect, useRef } from 'react';
-import { basicLight } from './basicLight';
+import { githubLight } from './githubLight';
 import { keymap } from '@codemirror/view';
 
 export const CodeMirrorEditor = (): JSX.Element => {
@@ -14,10 +14,20 @@ export const CodeMirrorEditor = (): JSX.Element => {
     }
 
     const view = new EditorView({
+      doc: `print("Hello World")
+
+if True:
+  print(123)
+  a = 3
+
+# test
+
+def a():
+  print(123)`,
       extensions: [
         basicSetup,
         python(),
-        basicLight,
+        githubLight,
         keymap.of([indentWithTab]),
       ],
       parent: ref.current,

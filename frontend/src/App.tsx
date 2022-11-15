@@ -45,7 +45,7 @@ const App: React.FC = (): JSX.Element => {
   };
 
   return (
-    <div className="relative antialiased h-screen">
+    <div className="relative h-screen">
       <div className="flex flex-col h-full">
         <div className="p-2 flex items-center justify-center">
           <button
