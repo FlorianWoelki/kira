@@ -68,7 +68,7 @@ const App: React.FC = (): JSX.Element => {
           className="grid grid-cols-2 bg-gray-200 gap-2 p-2"
           style={{ height: 'calc(100% - 56px)' }}
         >
-          <div className="rounded-lg bg-white">
+          <div className="rounded-lg bg-white overflow-auto">
             <CodeMirrorEditor onChange={(v) => setCode(v)}></CodeMirrorEditor>
             {/* <MonacoEditor
               value="print('Hello World')"

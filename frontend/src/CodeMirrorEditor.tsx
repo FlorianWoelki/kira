@@ -29,10 +29,21 @@ if True:
 def a():
   print(123)`,
       extensions: [
+        keymap.of([
+          indentWithTab,
+          {
+            key: 'Mod-Enter',
+            preventDefault: true,
+            run: (): boolean => {
+              props.onChange?.(view.state.doc.toString());
+              return true;
+            },
+            scope: 'editor',
+          },
+        ]),
         basicSetup,
         python(),
         githubLight,
-        keymap.of([indentWithTab]),
         EditorView.updateListener.of((e) => {
           props.onChange?.(e.state.doc.toString());
         }),
