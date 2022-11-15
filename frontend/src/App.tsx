@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { Checkbox } from './Checkbox';
 import { CodeMirrorEditor } from './CodeMirrorEditor';
 import { MonacoEditor } from './MonacoEditor';
 
@@ -12,9 +13,9 @@ interface CodeExecutionResult {
 }
 
 const App: React.FC = (): JSX.Element => {
-  const codeEditorRef = useRef<any>(null);
   const [codeResult, setCodeResult] = useState<CodeExecutionResult>();
   const [bypassCache, setBypassCache] = useState<boolean>(false);
+  const [code, setCode] = useState<string>('');
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -30,7 +31,7 @@ const App: React.FC = (): JSX.Element => {
         method: 'POST',
         body: JSON.stringify({
           language: 'python',
-          content: codeEditorRef.current.getValue(),
+          content: code,
         }),
       },
     );
@@ -47,7 +48,13 @@ const App: React.FC = (): JSX.Element => {
   return (
     <div className="relative h-screen">
       <div className="flex flex-col h-full">
-        <div className="p-2 flex items-center justify-center">
+        <div className="p-2 flex items-center justify-center space-x-4">
+          <Checkbox
+            id="bypass-cache"
+            onChange={() => setBypassCache((v) => !v)}
+          >
+            Bypass cache?
+          </Checkbox>
           <button
             className="flex items-center px-4 py-2 bg-green-400 rounded-lg text-green-800 font-semibold transition duration-100 ease-in-out hover:bg-green-500 disabled:cursor-not-allowed disabled:bg-opacity-50"
             onClick={runCode}
@@ -62,7 +69,7 @@ const App: React.FC = (): JSX.Element => {
           style={{ height: 'calc(100% - 56px)' }}
         >
           <div className="rounded-lg bg-white">
-            <CodeMirrorEditor></CodeMirrorEditor>
+            <CodeMirrorEditor onChange={(v) => setCode(v)}></CodeMirrorEditor>
             {/* <MonacoEditor
               value="print('Hello World')"
               onCtrlCmdEnter={runCode}

@@ -5,7 +5,11 @@ import { useEffect, useRef } from 'react';
 import { githubLight } from './githubLight';
 import { keymap } from '@codemirror/view';
 
-export const CodeMirrorEditor = (): JSX.Element => {
+interface Props {
+  onChange?: (input: string) => void;
+}
+
+export const CodeMirrorEditor: React.FC<Props> = (props): JSX.Element => {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -29,6 +33,9 @@ def a():
         python(),
         githubLight,
         keymap.of([indentWithTab]),
+        EditorView.updateListener.of((e) => {
+          props.onChange?.(e.state.doc.toString());
+        }),
       ],
       parent: ref.current,
     });
