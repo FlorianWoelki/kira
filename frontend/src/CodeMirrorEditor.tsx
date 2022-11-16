@@ -4,6 +4,7 @@ import { python } from '@codemirror/lang-python';
 import { useEffect, useRef } from 'react';
 import { githubLight } from './githubLight';
 import { keymap } from '@codemirror/view';
+import { indentationMarkers } from '@replit/codemirror-indentation-markers';
 
 interface Props {
   onChange?: (input: string) => void;
@@ -47,6 +48,7 @@ def a():
         EditorView.updateListener.of((e) => {
           props.onChange?.(e.state.doc.toString());
         }),
+        indentationMarkers(),
       ],
       parent: ref.current,
     });

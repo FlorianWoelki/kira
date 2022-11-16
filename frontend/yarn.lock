@@ -392,6 +392,11 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
+"@replit/codemirror-indentation-markers@^6.1.0":
+  version "6.1.0"
+  resolved "https://registry.yarnpkg.com/@replit/codemirror-indentation-markers/-/codemirror-indentation-markers-6.1.0.tgz#53ca559f25609c90e2e905624bb0aa57c7b3041a"
+  integrity sha512-x+9cWXUy60UdS1geFzaELXvchbHvsGjjwB+hQ+p9kOQ4Q3BH1Y2tC46OA6YLx0Lu2BoA1OEdvFsX3V2Af04yeA==
+
 "@rollup/pluginutils@^4.2.1":
   version "4.2.1"
   resolved "https://registry.yarnpkg.com/@rollup/pluginutils/-/pluginutils-4.2.1.tgz#e6c6c3aba0744edce3fb2074922d3776c0af2a6d"

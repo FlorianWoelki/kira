@@ -23,6 +23,14 @@ export const githubLightTheme = EditorView.theme(
       fontSize: '16px',
     },
 
+    '.cm-indentation-marker': {
+      background: 'linear-gradient(90deg, #F0F1F2 1px, transparent 0) top left',
+    },
+
+    '.cm-indentation-marker.active': {
+      background: 'linear-gradient(90deg, #E4E5E6 1px, transparent 0) top left',
+    },
+
     '.cm-content': {
       caretColor: options.caret,
       fontFamily:
