@@ -53,6 +53,7 @@ export const githubLightTheme = EditorView.theme(
     '.cm-gutters': {
       backgroundColor: options.gutterBackground,
       color: options.gutterForeground,
+      border: 'none',
     },
 
     '.cm-activeLineGutter': {
