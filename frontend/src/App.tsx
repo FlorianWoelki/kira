@@ -15,6 +15,10 @@ const App: React.FC = (): JSX.Element => {
   const [codeResult, setCodeResult] = useState<CodeExecutionResult>();
   const [bypassCache, setBypassCache] = useState<boolean>(false);
   const [code, setCode] = useState<string>('');
+  const [editorOptions, setEditorOptions] = useState<{
+    line: number;
+    column: number;
+  }>();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -80,8 +84,20 @@ const App: React.FC = (): JSX.Element => {
             </ul>
           </div>
 
-          <div className="rounded-lg bg-white overflow-auto col-span-2">
-            <CodeMirrorEditor onChange={(v) => setCode(v)}></CodeMirrorEditor>
+          <div className="flex flex-col rounded-lg bg-white overflow-auto col-span-2">
+            <CodeMirrorEditor
+              className="flex-1"
+              onChange={(v, options) => {
+                setCode(v);
+                setEditorOptions(options);
+              }}
+            ></CodeMirrorEditor>
+
+            {editorOptions && (
+              <div className="border-t p-2 text-sm text-gray-600">
+                Line: {editorOptions.line} Column: {editorOptions.column}
+              </div>
+            )}
           </div>
 
           <div className="rounded-lg bg-white p-4 overflow-auto h-full col-span-2">

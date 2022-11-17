@@ -7,7 +7,8 @@ import { keymap } from '@codemirror/view';
 import { indentationMarkers } from '@replit/codemirror-indentation-markers';
 
 interface Props {
-  onChange?: (input: string) => void;
+  className?: string;
+  onChange?: (input: string, options: { line: number; column: number }) => void;
 }
 
 export const CodeMirrorEditor: React.FC<Props> = (props): JSX.Element => {
@@ -36,7 +37,13 @@ def a():
             key: 'Mod-Enter',
             preventDefault: true,
             run: (): boolean => {
-              props.onChange?.(view.state.doc.toString());
+              props.onChange?.(view.state.doc.toString(), {
+                line: view.state.doc.lineAt(view.state.selection.main.head)
+                  .number,
+                column:
+                  view.state.selection.ranges[0].head -
+                  view.state.doc.lineAt(view.state.selection.main.head).from,
+              });
               return true;
             },
             scope: 'editor',
@@ -46,7 +53,12 @@ def a():
         python(),
         githubLight,
         EditorView.updateListener.of((e) => {
-          props.onChange?.(e.state.doc.toString());
+          props.onChange?.(e.state.doc.toString(), {
+            line: e.state.doc.lineAt(e.state.selection.main.head).number,
+            column:
+              e.state.selection.ranges[0].head -
+              e.state.doc.lineAt(e.state.selection.main.head).from,
+          });
         }),
         indentationMarkers(),
       ],
@@ -58,5 +70,5 @@ def a():
     };
   }, []);
 
-  return <div ref={ref}></div>;
+  return <div ref={ref} className={props.className}></div>;
 };
