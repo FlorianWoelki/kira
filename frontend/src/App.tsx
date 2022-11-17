@@ -1,7 +1,6 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Checkbox } from './Checkbox';
 import { CodeMirrorEditor } from './CodeMirrorEditor';
-import { MonacoEditor } from './MonacoEditor';
 
 interface CodeExecutionResult {
   compileOutput: string;
@@ -65,13 +64,27 @@ const App: React.FC = (): JSX.Element => {
         </div>
 
         <div
-          className="grid grid-cols-2 bg-gray-200 gap-2 p-2"
+          className="grid grid-cols-5 bg-gray-200 gap-2 p-2"
           style={{ height: 'calc(100% - 56px)' }}
         >
-          <div className="rounded-lg bg-white overflow-auto">
+          <div className="rounded-lg bg-white overflow-auto p-2 space-y-4">
+            <h2 className="font-bold text-xl">Files</h2>
+
+            <ul className="space-y-1">
+              <li
+                aria-selected="true"
+                className="rounded-lg bg-gray-200 px-2 py-1 hover:bg-gray-200 transition duration-100 ease-in-out"
+              >
+                <span>main.py</span>
+              </li>
+            </ul>
+          </div>
+
+          <div className="rounded-lg bg-white overflow-auto col-span-2">
             <CodeMirrorEditor onChange={(v) => setCode(v)}></CodeMirrorEditor>
           </div>
-          <div className="rounded-lg bg-white p-4 overflow-auto h-full">
+
+          <div className="rounded-lg bg-white p-4 overflow-auto h-full col-span-2">
             <p className="font-semibold">Output:</p>
             {codeResult ? (
               codeResult.compileError || codeResult.runError ? (
