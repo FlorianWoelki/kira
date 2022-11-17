@@ -37,6 +37,10 @@ export const githubLightTheme = EditorView.theme(
         'ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace',
     },
 
+    '.cm-selectionMatch': {
+      backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    },
+
     '.cm-cursor, .cm-dropCursor': {
       borderLeftColor: options.caret,
     },
