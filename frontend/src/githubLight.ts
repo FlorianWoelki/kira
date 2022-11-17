@@ -13,7 +13,6 @@ const options = {
   gutterForeground: '#6e7781',
 };
 
-/// The editor theme styles for Basic Light.
 export const githubLightTheme = EditorView.theme(
   {
     '&': {
@@ -127,8 +126,6 @@ export const githubLightHighlightStyle = HighlightStyle.define([
   },
 ]);
 
-/// Extension to enable the Basic Light theme (both the editor theme and
-/// the highlight style).
 export const githubLight: Extension = [
   githubLightTheme,
   syntaxHighlighting(githubLightHighlightStyle),
