@@ -70,11 +70,6 @@ const App: React.FC = (): JSX.Element => {
         >
           <div className="rounded-lg bg-white overflow-auto">
             <CodeMirrorEditor onChange={(v) => setCode(v)}></CodeMirrorEditor>
-            {/* <MonacoEditor
-              value="print('Hello World')"
-              onCtrlCmdEnter={runCode}
-              ref={codeEditorRef}
-            ></MonacoEditor> */}
           </div>
           <div className="rounded-lg bg-white p-4 overflow-auto h-full">
             <p className="font-semibold">Output:</p>
