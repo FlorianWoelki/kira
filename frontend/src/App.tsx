@@ -84,15 +84,15 @@ const App: React.FC = (): JSX.Element => {
             </ul>
           </div>
 
-          <div className="flex flex-col rounded-lg bg-white overflow-auto col-span-2">
-            <CodeMirrorEditor
-              className="flex-1"
-              onChange={(v, options) => {
-                setCode(v);
-                setEditorOptions(options);
-              }}
-            ></CodeMirrorEditor>
-
+          <div className="flex flex-col rounded-lg bg-white col-span-2 overflow-auto">
+            <div className="overflow-auto flex-1">
+              <CodeMirrorEditor
+                onChange={(v, options) => {
+                  setCode(v);
+                  setEditorOptions(options);
+                }}
+              ></CodeMirrorEditor>
+            </div>
             {editorOptions && (
               <div className="border-t p-2 text-sm text-gray-600">
                 Line: {editorOptions.line} Column: {editorOptions.column}
