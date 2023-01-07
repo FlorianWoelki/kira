@@ -5,10 +5,10 @@ RUN apt-get update --fix-missing \
     curl xz-utils unzip python3 nodejs -y \
     && apt-get clean
 
-# Golang 1.19.1 installation
-RUN curl -O "https://dl.google.com/go/go1.19.1.linux-amd64.tar.gz" \
-    && tar -C /usr/local -xzf go1.19.1.linux-amd64.tar.gz \
-    && rm go1.19.1.linux-amd64.tar.gz
+# Golang 1.19.4 installation
+RUN curl -O "https://dl.google.com/go/go1.19.4.linux-amd64.tar.gz" \
+    && tar -C /usr/local -xzf go1.19.4.linux-amd64.tar.gz \
+    && rm go1.19.4.linux-amd64.tar.gz
 
 ENV PATH=$PATH:/usr/local/go/bin
 
