@@ -12,12 +12,17 @@ type Output struct {
 	Time   int64  `json:"time"`
 }
 
+type TestOutput struct {
+	Output string `json:"output"`
+	Time   int64  `json:"time"`
+}
+
 type CodeOutput struct {
 	User          User
 	TempDirName   string
 	CompileOutput Output
 	RunOutput     Output
-	TestOutput    Output
+	TestOutput    TestOutput
 }
 
 type WorkerPool struct {

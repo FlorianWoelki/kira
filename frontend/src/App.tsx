@@ -11,7 +11,7 @@ interface Output {
 interface CodeExecutionResult {
   compileOutput: Output;
   runOutput: Output;
-  testOutput: Output;
+  testOutput: { output: string; time: number };
 }
 
 const App: React.FC = (): JSX.Element => {

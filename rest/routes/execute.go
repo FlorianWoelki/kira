@@ -17,9 +17,9 @@ type executeBody struct {
 }
 
 type executeResponse struct {
-	CompileOutput pool.Output `json:"compileOutput"`
-	RunOutput     pool.Output `json:"runOutput"`
-	TestOutput    pool.Output `json:"testOutput,omitempty"`
+	CompileOutput pool.Output     `json:"compileOutput"`
+	RunOutput     pool.Output     `json:"runOutput"`
+	TestOutput    pool.TestOutput `json:"testOutput,omitempty"`
 }
 
 func Execute(c echo.Context, rceEngine *internal.RceEngine) error {
