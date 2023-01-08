@@ -38,11 +38,23 @@ const App: React.FC = (): JSX.Element => {
         body: JSON.stringify({
           language: 'python',
           content: code,
+          //           content: `def custom_sum(a, b):
+          //   return a + b`,
+          //           test: `import unittest
+          // from .app import custom_sum
+
+          // class TestSumFunction(unittest.TestCase):
+          //   def test_sum(self):
+          //     self.assertEqual(custom_sum(1, 1), 2)
+          //     self.assertEqual(custom_sum(10, 10), 20)
+          //     self.assertEqual(custom_sum(100, 100), 200)
+          //     self.assertEqual(custom_sum(1000, 1000), 2000)`,
         }),
       },
     );
 
     const jsonResult: CodeExecutionResult = await result.json();
+    console.log(jsonResult);
     setCodeResult(jsonResult);
     setIsLoading(false);
   };
