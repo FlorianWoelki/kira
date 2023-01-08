@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/florianwoelki/kira/internal"
+	"github.com/florianwoelki/kira/internal/pool"
 	"github.com/labstack/echo/v4"
 )
 
@@ -16,12 +17,9 @@ type executeBody struct {
 }
 
 type executeResponse struct {
-	CompileOutput string `json:"compileOutput"`
-	CompileError  string `json:"compileError"`
-	CompileTime   int64  `json:"compileTime"`
-	RunOutput     string `json:"runOutput"`
-	RunError      string `json:"runError"`
-	RunTime       int64  `json:"runTime"`
+	CompileOutput pool.Output `json:"compileOutput"`
+	RunOutput     pool.Output `json:"runOutput"`
+	TestOutput    pool.Output `json:"testOutput,omitempty"`
 }
 
 func Execute(c echo.Context, rceEngine *internal.RceEngine) error {
@@ -51,12 +49,9 @@ func Execute(c echo.Context, rceEngine *internal.RceEngine) error {
 	}
 
 	c.JSON(http.StatusOK, executeResponse{
-		CompileOutput: output.CompileResult,
-		CompileError:  output.CompileError,
-		CompileTime:   output.CompileTime.Milliseconds(),
-		RunOutput:     output.RunResult,
-		RunError:      output.RunError,
-		RunTime:       output.RunTime.Milliseconds(),
+		CompileOutput: output.CompileOutput,
+		RunOutput:     output.RunOutput,
+		TestOutput:    output.TestOutput,
 	})
 	return nil
 }

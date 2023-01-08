@@ -32,16 +32,16 @@ func NewRceEngine() *RceEngine {
 	}
 }
 
-func (rce *RceEngine) action(lang, code string, test string, bypassCache bool, ch chan<- pool.CodeOutput) {
-	language, err := GetLanguageByName(lang)
+func (rce *RceEngine) action(data pool.WorkData, ch chan<- pool.CodeOutput) {
+	language, err := GetLanguageByName(data.Lang)
 	if err != nil {
 		ch <- pool.CodeOutput{}
 		return
 	}
 
 	var cacheOutput pool.CodeOutput
-	if !bypassCache {
-		cacheOutput, err = rce.cache.Get(language.Name, code)
+	if !data.BypassCache {
+		cacheOutput, err = rce.cache.Get(language.Name, data.Code)
 
 		if err == nil {
 			ch <- cacheOutput
@@ -73,14 +73,14 @@ func (rce *RceEngine) action(lang, code string, test string, bypassCache bool, c
 		return
 	}
 
-	err = WriteToFile(filename, code)
+	err = WriteToFile(filename, data.Code)
 	if err != nil {
 		rce.systemUsers.Release(user.Uid)
 		ch <- pool.CodeOutput{}
 		return
 	}
 
-	if len(test) != 0 {
+	if len(data.Test) != 0 {
 		testFilename, err := CreateTempFile(user.Username, tempDirName, "code_test", language.Extension)
 		if err != nil {
 			rce.systemUsers.Release(user.Uid)
@@ -89,7 +89,7 @@ func (rce *RceEngine) action(lang, code string, test string, bypassCache bool, c
 			return
 		}
 
-		err = WriteToFile(testFilename, test)
+		err = WriteToFile(testFilename, data.Test)
 		if err != nil {
 			rce.systemUsers.Release(user.Uid)
 			ch <- pool.CodeOutput{}
@@ -103,22 +103,26 @@ func (rce *RceEngine) action(lang, code string, test string, bypassCache bool, c
 	if language.Compiled {
 		now := time.Now()
 		compileOutput, compileError := rce.compileFile(filename, executableFilename, language)
-		codeOutput.CompileResult = compileOutput
-		codeOutput.CompileError = compileError
-		codeOutput.CompileTime = time.Since(now)
+		codeOutput.CompileOutput = pool.Output{
+			Result: compileOutput,
+			Error:  compileError,
+			Time:   time.Since(now).Milliseconds(),
+		}
 	}
 
 	// Execute the file when there is no error while compiling.
-	if len(codeOutput.CompileError) == 0 {
+	if len(codeOutput.CompileOutput.Error) == 0 {
 		now := time.Now()
 		runOutput, runError := rce.executeFile(user.Username, filename, executableFilename, language)
-		codeOutput.RunResult = runOutput
-		codeOutput.RunError = runError
-		codeOutput.RunTime = time.Since(now)
+		codeOutput.RunOutput = pool.Output{
+			Result: runOutput,
+			Error:  runError,
+			Time:   time.Since(now).Milliseconds(),
+		}
 	}
 
 	// If the length of the test content is not empty, run the tests in the directory.
-	if len(test) != 0 {
+	if len(data.Test) != 0 {
 		executableFilename := ExecutableFile(user.Username, tempDirName, "code_test")
 		// TODO: Refactor to have custom fields in sending output.
 		fmt.Println(rce.executeTestsForFile(user.Username, filename, executableFilename, language))
@@ -126,8 +130,8 @@ func (rce *RceEngine) action(lang, code string, test string, bypassCache bool, c
 
 	ch <- codeOutput
 
-	if !bypassCache {
-		rce.cache.Set(language.Name, code, codeOutput)
+	if !data.BypassCache {
+		rce.cache.Set(language.Name, data.Code, codeOutput)
 	}
 
 	rce.CleanUp(user, tempDirName)
@@ -135,7 +139,7 @@ func (rce *RceEngine) action(lang, code string, test string, bypassCache bool, c
 
 func (rce *RceEngine) Dispatch(lang, code string, test string, bypassCache bool) (pool.CodeOutput, error) {
 	dataChannel := make(chan pool.CodeOutput)
-	rce.pool.SubmitJob(lang, code, test, bypassCache, rce.action, dataChannel)
+	rce.pool.SubmitJob(pool.WorkData{Lang: lang, Code: code, Test: test, BypassCache: bypassCache}, rce.action, dataChannel)
 	output := <-dataChannel
 	return output, nil
 }

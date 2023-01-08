@@ -4,18 +4,20 @@ import (
 	"log"
 	"os"
 	"sync"
-	"time"
 )
+
+type Output struct {
+	Result string `json:"result"`
+	Error  string `json:"error"`
+	Time   int64  `json:"time"`
+}
 
 type CodeOutput struct {
 	User          User
 	TempDirName   string
-	CompileResult string
-	CompileError  string
-	CompileTime   time.Duration
-	RunResult     string
-	RunError      string
-	RunTime       time.Duration
+	CompileOutput Output
+	RunOutput     Output
+	TestOutput    Output
 }
 
 type WorkerPool struct {
@@ -24,13 +26,19 @@ type WorkerPool struct {
 	workingGroup *sync.WaitGroup
 }
 
+type WorkData struct {
+	Lang        string
+	Code        string
+	Test        string
+	BypassCache bool
+}
+
+type actionFunc = func(data WorkData, ch chan<- CodeOutput)
+
 type WorkType struct {
-	lang        string
-	code        string
-	test        string
-	bypassCache bool
-	action      func(lang, code string, tests string, bypassCache bool, ch chan<- CodeOutput)
-	ch          chan<- CodeOutput
+	data   WorkData
+	action actionFunc
+	ch     chan<- CodeOutput
 }
 
 func NewWorkerPool(nWorkers int) *WorkerPool {
@@ -50,15 +58,8 @@ func NewWorkerPool(nWorkers int) *WorkerPool {
 	}
 }
 
-func (wp *WorkerPool) SubmitJob(lang, code string, test string, bypassCache bool, action func(lang, code string, tests string, bypassCache bool, ch chan<- CodeOutput), ch chan<- CodeOutput) {
-	work := WorkType{
-		lang:        lang,
-		code:        code,
-		test:        test,
-		ch:          ch,
-		bypassCache: bypassCache,
-		action:      action,
-	}
+func (wp *WorkerPool) SubmitJob(data WorkData, action actionFunc, ch chan<- CodeOutput) {
+	work := WorkType{data, action, ch}
 	wp.queue.enqueue(work)
 }
 
@@ -73,6 +74,6 @@ func poolWorker[T any](wg *sync.WaitGroup, queue *ConcurrentQueue[T], idx int) {
 		}
 
 		work := val.(WorkType)
-		work.action(work.lang, work.code, work.test, work.bypassCache, work.ch)
+		work.action(work.data, work.ch)
 	}
 }
