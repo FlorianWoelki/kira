@@ -27,8 +27,9 @@ type WorkerPool struct {
 type WorkType struct {
 	lang        string
 	code        string
+	test        string
 	bypassCache bool
-	action      func(lang, code string, bypassCache bool, ch chan<- CodeOutput)
+	action      func(lang, code string, tests string, bypassCache bool, ch chan<- CodeOutput)
 	ch          chan<- CodeOutput
 }
 
@@ -49,10 +50,11 @@ func NewWorkerPool(nWorkers int) *WorkerPool {
 	}
 }
 
-func (wp *WorkerPool) SubmitJob(lang, code string, bypassCache bool, action func(lang, code string, bypassCache bool, ch chan<- CodeOutput), ch chan<- CodeOutput) {
+func (wp *WorkerPool) SubmitJob(lang, code string, test string, bypassCache bool, action func(lang, code string, tests string, bypassCache bool, ch chan<- CodeOutput), ch chan<- CodeOutput) {
 	work := WorkType{
 		lang:        lang,
 		code:        code,
+		test:        test,
 		ch:          ch,
 		bypassCache: bypassCache,
 		action:      action,
@@ -71,6 +73,6 @@ func poolWorker[T any](wg *sync.WaitGroup, queue *ConcurrentQueue[T], idx int) {
 		}
 
 		work := val.(WorkType)
-		work.action(work.lang, work.code, work.bypassCache, work.ch)
+		work.action(work.lang, work.code, work.test, work.bypassCache, work.ch)
 	}
 }

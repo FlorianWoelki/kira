@@ -19,19 +19,19 @@ func CreateTempDir(user, dirName string) error {
 	return nil
 }
 
-func ExecutableFile(user, dirname string) string {
-	return fmt.Sprintf("/tmp/%s/%s/code", user, dirname)
+func ExecutableFile(user, dirname, filename string) string {
+	return fmt.Sprintf("/tmp/%s/%s/%s", user, dirname, filename)
 }
 
-func CreateTempFile(user, dirName, extension string) (string, error) {
-	filename := fmt.Sprintf("/tmp/%s/%s/code%s", user, dirName, extension)
+func CreateTempFile(user, dirName, filename, extension string) (string, error) {
+	fn := fmt.Sprintf("/tmp/%s/%s/%s%s", user, dirName, filename, extension)
 
-	if err := exec.Command("runuser", "-u", user, "--", "touch", filename).Run(); err != nil {
+	if err := exec.Command("runuser", "-u", user, "--", "touch", fn).Run(); err != nil {
 		fileLogger.Println("Could not create temp file.")
 		return "", err
 	}
 
-	return filename, nil
+	return fn, nil
 }
 
 func WriteToFile(filename, code string) error {

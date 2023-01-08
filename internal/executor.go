@@ -32,7 +32,7 @@ func NewRceEngine() *RceEngine {
 	}
 }
 
-func (rce *RceEngine) action(lang, code string, bypassCache bool, ch chan<- pool.CodeOutput) {
+func (rce *RceEngine) action(lang, code string, test string, bypassCache bool, ch chan<- pool.CodeOutput) {
 	language, err := GetLanguageByName(lang)
 	if err != nil {
 		ch <- pool.CodeOutput{}
@@ -65,7 +65,7 @@ func (rce *RceEngine) action(lang, code string, bypassCache bool, ch chan<- pool
 		return
 	}
 
-	filename, err := CreateTempFile(user.Username, tempDirName, language.Extension)
+	filename, err := CreateTempFile(user.Username, tempDirName, "code", language.Extension)
 	if err != nil {
 		rce.systemUsers.Release(user.Uid)
 		DeleteAll(user.Username)
@@ -80,7 +80,24 @@ func (rce *RceEngine) action(lang, code string, bypassCache bool, ch chan<- pool
 		return
 	}
 
-	executableFilename := ExecutableFile(user.Username, tempDirName)
+	if len(test) != 0 {
+		testFilename, err := CreateTempFile(user.Username, tempDirName, "code_test", language.Extension)
+		if err != nil {
+			rce.systemUsers.Release(user.Uid)
+			DeleteAll(user.Username)
+			ch <- pool.CodeOutput{}
+			return
+		}
+
+		err = WriteToFile(testFilename, test)
+		if err != nil {
+			rce.systemUsers.Release(user.Uid)
+			ch <- pool.CodeOutput{}
+			return
+		}
+	}
+
+	executableFilename := ExecutableFile(user.Username, tempDirName, "code")
 	codeOutput := pool.CodeOutput{User: *user, TempDirName: tempDirName}
 
 	if language.Compiled {
@@ -91,12 +108,20 @@ func (rce *RceEngine) action(lang, code string, bypassCache bool, ch chan<- pool
 		codeOutput.CompileTime = time.Since(now)
 	}
 
+	// Execute the file when there is no error while compiling.
 	if len(codeOutput.CompileError) == 0 {
 		now := time.Now()
 		runOutput, runError := rce.executeFile(user.Username, filename, executableFilename, language)
 		codeOutput.RunResult = runOutput
 		codeOutput.RunError = runError
 		codeOutput.RunTime = time.Since(now)
+	}
+
+	// If the length of the test content is not empty, run the tests in the directory.
+	if len(test) != 0 {
+		executableFilename := ExecutableFile(user.Username, tempDirName, "code_test")
+		// TODO: Refactor to have custom fields in sending output.
+		fmt.Println(rce.executeTestsForFile(user.Username, filename, executableFilename, language))
 	}
 
 	ch <- codeOutput
@@ -108,9 +133,9 @@ func (rce *RceEngine) action(lang, code string, bypassCache bool, ch chan<- pool
 	rce.CleanUp(user, tempDirName)
 }
 
-func (rce *RceEngine) Dispatch(lang, code string, bypassCache bool) (pool.CodeOutput, error) {
+func (rce *RceEngine) Dispatch(lang, code string, test string, bypassCache bool) (pool.CodeOutput, error) {
 	dataChannel := make(chan pool.CodeOutput)
-	rce.pool.SubmitJob(lang, code, bypassCache, rce.action, dataChannel)
+	rce.pool.SubmitJob(lang, code, test, bypassCache, rce.action, dataChannel)
 	output := <-dataChannel
 	return output, nil
 }
@@ -151,8 +176,16 @@ func (rce *RceEngine) compileFile(file, executableFile string, language Language
 	return result, errBuffer.String()
 }
 
+func (rce *RceEngine) executeTestsForFile(currentUser, file, executableFile string, language Language) (string, string) {
+	return rce.execute(currentUser, file, "test", executableFile, language)
+}
+
 func (rce *RceEngine) executeFile(currentUser, file, executableFile string, language Language) (string, string) {
-	runScript := fmt.Sprintf("/kira/languages/%s/run.sh", strings.ToLower(language.Name))
+	return rce.execute(currentUser, file, "run", executableFile, language)
+}
+
+func (rce *RceEngine) execute(currentUser, file, scriptName, executableFile string, language Language) (string, string) {
+	runScript := fmt.Sprintf("/kira/languages/%s/%s.sh", strings.ToLower(language.Name), scriptName)
 
 	run := exec.Command("/bin/bash", runScript, currentUser, file, executableFile)
 	head := exec.Command("head", "--bytes", maxOutputBufferCapacity)
