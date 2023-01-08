@@ -2,13 +2,16 @@ import { useState } from 'react';
 import { Checkbox } from './Checkbox';
 import { CodeMirrorEditor } from './CodeMirrorEditor';
 
+interface Output {
+  result: string;
+  error: string;
+  time: number;
+}
+
 interface CodeExecutionResult {
-  compileOutput: string;
-  compileError: string;
-  compileTime: number;
-  runOutput: string;
-  runError: string;
-  runTime: number;
+  compileOutput: Output;
+  runOutput: Output;
+  testOutput: Output;
 }
 
 const App: React.FC = (): JSX.Element => {
@@ -103,17 +106,17 @@ const App: React.FC = (): JSX.Element => {
           <div className="rounded-lg bg-white p-4 overflow-auto h-full col-span-2">
             <p className="font-semibold">Output:</p>
             {codeResult ? (
-              codeResult.compileError || codeResult.runError ? (
+              codeResult.compileOutput.error || codeResult.runOutput.error ? (
                 <>
-                  <p>Compile Error: {codeResult.compileError}</p>
-                  <p>Run Error: {codeResult.runError}</p>
+                  <p>Compile Error: {codeResult.compileOutput.error}</p>
+                  <p>Run Error: {codeResult.runOutput.error}</p>
                 </>
               ) : (
                 <>
                   <p className="italic text-sm mb-4">
-                    Time: {codeResult.runTime}ms
+                    Time: {codeResult.runOutput.time}ms
                   </p>
-                  {normalizeOutput(codeResult.runOutput).map((v, i) => (
+                  {normalizeOutput(codeResult.runOutput.result).map((v, i) => (
                     <p key={i}>{v}</p>
                   ))}
                 </>
