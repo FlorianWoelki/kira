@@ -2,5 +2,11 @@
   "name": "Python",
   "extension": ".py",
   "version": "3.7.10",
-  "timeout": 10
+  "timeout": 10,
+  "testInfo": {
+    "regex": "(test_\\w+)\\s+\\(.+\\)\\s\\.\\.\\.\\s((ok|FAIL))",
+    "failedTestRegex": "FAIL:\\s(test_(\\w+))\\s+\\(.+\\)",
+    "assertionRegex": ".*Error:\\s(.*)\\s!=\\s(.*)",
+    "passedString": "ok"
+  }
 }

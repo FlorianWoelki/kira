@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -19,7 +20,13 @@ type Language struct {
 	Version   string `json:"version" binding:"required"`
 	Extension string `json:"extension" binding:"required"`
 	Timeout   int    `json:"timeout" binding:"required"`
-	Compiled  bool
+	TestInfo  struct {
+		Regex           string `json:"regex,omitempty"`
+		FailedTestRegex string `json:"failedTestRegex,omitempty"`
+		AssertionRegex  string `json:"assertionRegex,omitempty"`
+		PassedString    string `json:"passedString,omitempty"`
+	} `json:"testInfo,omitempty"`
+	Compiled bool
 }
 
 func LoadLanguages(activeLanguages []string) error {
@@ -88,4 +95,50 @@ func GetLanguageByName(key string) (Language, error) {
 	}
 
 	return find, nil
+}
+
+type testOutput struct {
+	name     string
+	received string
+	actual   string
+	passed   bool
+}
+
+func PrettifyTestOutput(output string, language Language) {
+	regex := regexp.MustCompile(language.TestInfo.Regex)
+	failedTestRegex := regexp.MustCompile(language.TestInfo.FailedTestRegex)
+	assertionRegex := regexp.MustCompile(language.TestInfo.AssertionRegex)
+	lines := strings.Split(output, "\n")
+
+	result := map[string]*testOutput{}
+
+	lastFailedTest := ""
+	for _, line := range lines {
+		regexMatch := regex.FindStringSubmatch(line)
+		failedTestMatch := failedTestRegex.FindStringSubmatch(line)
+
+		if len(regexMatch) > 0 {
+			name := regexMatch[1]
+			status := regexMatch[2]
+			result[name] = &testOutput{
+				name:   name,
+				passed: status == language.TestInfo.PassedString,
+			}
+		} else if len(failedTestMatch) > 0 {
+			lastFailedTest = failedTestMatch[1]
+		}
+
+		if len(lastFailedTest) > 0 {
+			assertionMatch := assertionRegex.FindStringSubmatch(line)
+			if len(assertionMatch) > 0 {
+				result[lastFailedTest].received = assertionMatch[1]
+				result[lastFailedTest].actual = assertionMatch[2]
+				lastFailedTest = ""
+			}
+		}
+	}
+
+	for _, r := range result {
+		fmt.Println(r)
+	}
 }

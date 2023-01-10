@@ -126,10 +126,14 @@ func (rce *RceEngine) action(data pool.WorkData, ch chan<- pool.CodeOutput) {
 	if len(data.Test) != 0 {
 		now := time.Now()
 		executableFilename := ExecutableFile(user.Username, tempDirName, "code_test")
-		_, testError := rce.executeTestsForFile(user.Username, testFilename, executableFilename, language)
+		_, testOutput := rce.executeTestsForFile(user.Username, testFilename, executableFilename, language)
+		actualTime := time.Since(now).Milliseconds()
+
+		PrettifyTestOutput(testOutput, language)
+
 		codeOutput.TestOutput = pool.TestOutput{
-			Output: testError,
-			Time:   time.Since(now).Milliseconds(),
+			Output: testOutput,
+			Time:   actualTime,
 		}
 	}
 
