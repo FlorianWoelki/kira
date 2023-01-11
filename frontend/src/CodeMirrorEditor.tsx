@@ -7,6 +7,7 @@ import { keymap } from '@codemirror/view';
 import { indentationMarkers } from '@replit/codemirror-indentation-markers';
 
 interface Props {
+  defaultValue?: string;
   className?: string;
   onChange?: (input: string, options: { line: number; column: number }) => void;
 }
@@ -20,16 +21,7 @@ export const CodeMirrorEditor: React.FC<Props> = (props): JSX.Element => {
     }
 
     const view = new EditorView({
-      doc: `print("Hello World")
-
-if True:
-  print(123)
-  a = 3
-
-# test
-
-def a():
-  print(123)`,
+      doc: props.defaultValue ?? '',
       extensions: [
         keymap.of([
           indentWithTab,

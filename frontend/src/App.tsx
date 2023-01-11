@@ -2,6 +2,16 @@ import { useState } from 'react';
 import { Checkbox } from './Checkbox';
 import { CodeMirrorEditor } from './CodeMirrorEditor';
 
+const useCodeMirrorEditor = () => {
+  const [code, setCode] = useState<string>('');
+  const [editorOptions, setEditorOptions] = useState<{
+    line: number;
+    column: number;
+  }>();
+
+  return { code, setCode, editorOptions, setEditorOptions };
+};
+
 interface Output {
   result: string;
   error: string;
@@ -17,11 +27,9 @@ interface CodeExecutionResult {
 const App: React.FC = (): JSX.Element => {
   const [codeResult, setCodeResult] = useState<CodeExecutionResult>();
   const [bypassCache, setBypassCache] = useState<boolean>(false);
-  const [code, setCode] = useState<string>('');
-  const [editorOptions, setEditorOptions] = useState<{
-    line: number;
-    column: number;
-  }>();
+
+  const codeEditor = useCodeMirrorEditor();
+  const testEditor = useCodeMirrorEditor();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -37,23 +45,8 @@ const App: React.FC = (): JSX.Element => {
         method: 'POST',
         body: JSON.stringify({
           language: 'python',
-          // content: code,
-          content: `def custom_sum(a, b):
-  return a + b`,
-          test: `import unittest
-from .app import custom_sum
-
-class TestSumFunction(unittest.TestCase):
-  def test_sum_2(self):
-    self.assertEqual(custom_sum(2, 4), 4)
-    self.assertEqual(custom_sum(20, 20), 40)
-    self.assertEqual(custom_sum(200, 200), 400)
-
-  def test_sum(self):
-    self.assertEqual(custom_sum(1, 1), 2)
-    self.assertEqual(custom_sum(10, 10), 20)
-    self.assertEqual(custom_sum(100, 100), 200)
-    self.assertEqual(custom_sum(1000, 1000), 2000)`,
+          content: codeEditor.code,
+          test: testEditor.code,
         }),
       },
     );
@@ -104,20 +97,57 @@ class TestSumFunction(unittest.TestCase):
             </ul>
           </div>
 
-          <div className="flex flex-col rounded-lg bg-white col-span-2 overflow-auto">
-            <div className="overflow-auto flex-1">
-              <CodeMirrorEditor
-                onChange={(v, options) => {
-                  setCode(v);
-                  setEditorOptions(options);
-                }}
-              ></CodeMirrorEditor>
-            </div>
-            {editorOptions && (
-              <div className="border-t p-2 text-sm text-gray-600">
-                Line: {editorOptions.line} Column: {editorOptions.column}
+          <div className="flex flex-col justify-between col-span-2 gap-2">
+            <div className="flex flex-col rounded-lg bg-white overflow-auto h-full">
+              <div className="overflow-auto flex-1">
+                <CodeMirrorEditor
+                  defaultValue={`print("Hello World")
+
+def custom_sum(a, b):
+  return a + b`}
+                  onChange={(v, options) => {
+                    codeEditor.setCode(v);
+                    codeEditor.setEditorOptions(options);
+                  }}
+                ></CodeMirrorEditor>
               </div>
-            )}
+              {codeEditor.editorOptions && (
+                <div className="border-t p-2 text-sm text-gray-600">
+                  Line: {codeEditor.editorOptions.line} Column:{' '}
+                  {codeEditor.editorOptions.column}
+                </div>
+              )}
+            </div>
+            <div className="flex flex-col rounded-lg bg-white overflow-auto h-full">
+              <div className="overflow-auto flex-1">
+                <CodeMirrorEditor
+                  defaultValue={`import unittest
+from .app import custom_sum
+
+class TestSumFunction(unittest.TestCase):
+  def test_sum_2(self):
+    self.assertEqual(custom_sum(2, 4), 4)
+    self.assertEqual(custom_sum(20, 20), 40)
+    self.assertEqual(custom_sum(200, 200), 400)
+
+  def test_sum(self):
+    self.assertEqual(custom_sum(1, 1), 2)
+    self.assertEqual(custom_sum(10, 10), 20)
+    self.assertEqual(custom_sum(100, 100), 200)
+    self.assertEqual(custom_sum(1000, 1000), 2000)`}
+                  onChange={(v, options) => {
+                    testEditor.setCode(v);
+                    testEditor.setEditorOptions(options);
+                  }}
+                ></CodeMirrorEditor>
+              </div>
+              {testEditor.editorOptions && (
+                <div className="border-t p-2 text-sm text-gray-600">
+                  Line: {testEditor.editorOptions.line} Column:{' '}
+                  {testEditor.editorOptions.column}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="rounded-lg bg-white p-4 overflow-auto h-full col-span-2">
