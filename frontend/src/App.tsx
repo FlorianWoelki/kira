@@ -21,7 +21,16 @@ interface Output {
 interface CodeExecutionResult {
   compileOutput: Output;
   runOutput: Output;
-  testOutput: { output: string; time: number };
+  testOutput: {
+    results: {
+      name: string;
+      received: string;
+      actual: string;
+      passed: boolean;
+    }[];
+    rawOutput: string;
+    time: number;
+  };
 }
 
 const App: React.FC = (): JSX.Element => {
@@ -103,6 +112,9 @@ const App: React.FC = (): JSX.Element => {
                 <CodeMirrorEditor
                   defaultValue={`print("Hello World")
 
+def custom_multiply(a, b):
+  return a * b
+
 def custom_sum(a, b):
   return a + b`}
                   onChange={(v, options) => {
@@ -122,11 +134,17 @@ def custom_sum(a, b):
               <div className="overflow-auto flex-1">
                 <CodeMirrorEditor
                   defaultValue={`import unittest
-from .app import custom_sum
+from .app import custom_sum, custom_multiply
+
+class TestProductFunction(unittest.TestCase):
+  def test_multiply(self):
+    self.assertEqual(custom_multiply(1, 1), 1)
+    self.assertEqual(custom_multiply(10, 10), 100)
+    self.assertEqual(custom_multiply(100, 100), 10000)
 
 class TestSumFunction(unittest.TestCase):
   def test_sum_2(self):
-    self.assertEqual(custom_sum(2, 4), 4)
+    self.assertEqual(custom_sum(2, 2), 4)
     self.assertEqual(custom_sum(20, 20), 40)
     self.assertEqual(custom_sum(200, 200), 400)
 
@@ -151,7 +169,7 @@ class TestSumFunction(unittest.TestCase):
           </div>
 
           <div className="rounded-lg bg-white p-4 overflow-auto h-full col-span-2">
-            <p className="font-semibold">Output:</p>
+            <p className="font-semibold">Program Output:</p>
             {codeResult ? (
               codeResult.compileOutput.error || codeResult.runOutput.error ? (
                 <>
@@ -168,6 +186,32 @@ class TestSumFunction(unittest.TestCase):
                   ))}
                 </>
               )
+            ) : (
+              ''
+            )}
+
+            <div className="border my-6 border-gray-100"></div>
+
+            <p className="font-semibold">Test Output:</p>
+            {codeResult ? (
+              <>
+                <p className="italic text-sm mb-4">
+                  Time: {codeResult.testOutput.time}ms
+                </p>
+                {codeResult.testOutput.results.map((result) => (
+                  <p key={result.name} className="flex flex-col mb-4">
+                    <span>
+                      {result.passed ? '🟩' : '🟥'} Name: {result.name}
+                    </span>
+                    {!result.passed && (
+                      <>
+                        <span>Actual value: {result.actual}</span>
+                        <span>Received value: {result.received}</span>
+                      </>
+                    )}
+                  </p>
+                ))}
+              </>
             ) : (
               ''
             )}
