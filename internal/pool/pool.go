@@ -12,9 +12,17 @@ type Output struct {
 	Time   int64  `json:"time"`
 }
 
+type TestResult struct {
+	Name     string `json:"name" binding:"required"`
+	Received string `json:"received" binding:"required"`
+	Actual   string `json:"actual" binding:"required"`
+	Passed   bool   `json:"passed" binding:"required"`
+}
+
 type TestOutput struct {
-	Output string `json:"output"`
-	Time   int64  `json:"time"`
+	RawOutput string        `json:"rawOutput" binding:"required"`
+	Results   []*TestResult `json:"results" binding:"required"`
+	Time      int64         `json:"time" binding:"required"`
 }
 
 type CodeOutput struct {

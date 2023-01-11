@@ -129,11 +129,12 @@ func (rce *RceEngine) action(data pool.WorkData, ch chan<- pool.CodeOutput) {
 		_, testOutput := rce.executeTestsForFile(user.Username, testFilename, executableFilename, language)
 		actualTime := time.Since(now).Milliseconds()
 
-		PrettifyTestOutput(testOutput, language)
+		prettifiedTestOutput := PrettifyTestOutput(testOutput, language)
 
 		codeOutput.TestOutput = pool.TestOutput{
-			Output: testOutput,
-			Time:   actualTime,
+			RawOutput: testOutput,
+			Results:   prettifiedTestOutput,
+			Time:      actualTime,
 		}
 	}
 

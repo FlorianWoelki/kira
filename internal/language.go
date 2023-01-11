@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/florianwoelki/kira/internal/pool"
 )
 
 var languageLogger *log.Logger = log.New(os.Stdout, "language: ", log.LstdFlags|log.Lshortfile)
@@ -97,20 +99,13 @@ func GetLanguageByName(key string) (Language, error) {
 	return find, nil
 }
 
-type testOutput struct {
-	name     string
-	received string
-	actual   string
-	passed   bool
-}
-
-func PrettifyTestOutput(output string, language Language) {
+func PrettifyTestOutput(output string, language Language) []*pool.TestResult {
 	regex := regexp.MustCompile(language.TestInfo.Regex)
 	failedTestRegex := regexp.MustCompile(language.TestInfo.FailedTestRegex)
 	assertionRegex := regexp.MustCompile(language.TestInfo.AssertionRegex)
 	lines := strings.Split(output, "\n")
 
-	result := map[string]*testOutput{}
+	formattedOutput := map[string]*pool.TestResult{}
 
 	lastFailedTest := ""
 	for _, line := range lines {
@@ -120,9 +115,9 @@ func PrettifyTestOutput(output string, language Language) {
 		if len(regexMatch) > 0 {
 			name := regexMatch[1]
 			status := regexMatch[2]
-			result[name] = &testOutput{
-				name:   name,
-				passed: status == language.TestInfo.PassedString,
+			formattedOutput[name] = &pool.TestResult{
+				Name:   name,
+				Passed: status == language.TestInfo.PassedString,
 			}
 		} else if len(failedTestMatch) > 0 {
 			lastFailedTest = failedTestMatch[1]
@@ -131,14 +126,17 @@ func PrettifyTestOutput(output string, language Language) {
 		if len(lastFailedTest) > 0 {
 			assertionMatch := assertionRegex.FindStringSubmatch(line)
 			if len(assertionMatch) > 0 {
-				result[lastFailedTest].received = assertionMatch[1]
-				result[lastFailedTest].actual = assertionMatch[2]
+				formattedOutput[lastFailedTest].Received = assertionMatch[1]
+				formattedOutput[lastFailedTest].Actual = assertionMatch[2]
 				lastFailedTest = ""
 			}
 		}
 	}
 
-	for _, r := range result {
-		fmt.Println(r)
+	result := []*pool.TestResult{}
+	for _, data := range formattedOutput {
+		result = append(result, data)
 	}
+
+	return result
 }
