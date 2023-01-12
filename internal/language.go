@@ -7,10 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
-
-	"github.com/florianwoelki/kira/internal/pool"
 )
 
 var languageLogger *log.Logger = log.New(os.Stdout, "language: ", log.LstdFlags|log.Lshortfile)
@@ -97,46 +94,4 @@ func GetLanguageByName(key string) (Language, error) {
 	}
 
 	return find, nil
-}
-
-func PrettifyTestOutput(output string, language Language) []*pool.TestResult {
-	regex := regexp.MustCompile(language.TestInfo.Regex)
-	failedTestRegex := regexp.MustCompile(language.TestInfo.FailedTestRegex)
-	assertionRegex := regexp.MustCompile(language.TestInfo.AssertionRegex)
-	lines := strings.Split(output, "\n")
-
-	formattedOutput := map[string]*pool.TestResult{}
-
-	lastFailedTest := ""
-	for _, line := range lines {
-		regexMatch := regex.FindStringSubmatch(line)
-		failedTestMatch := failedTestRegex.FindStringSubmatch(line)
-
-		if len(regexMatch) > 0 {
-			name := regexMatch[1]
-			status := regexMatch[2]
-			formattedOutput[name] = &pool.TestResult{
-				Name:   name,
-				Passed: status == language.TestInfo.PassedString,
-			}
-		} else if len(failedTestMatch) > 0 {
-			lastFailedTest = failedTestMatch[1]
-		}
-
-		if len(lastFailedTest) > 0 {
-			assertionMatch := assertionRegex.FindStringSubmatch(line)
-			if len(assertionMatch) > 0 {
-				formattedOutput[lastFailedTest].Received = assertionMatch[1]
-				formattedOutput[lastFailedTest].Actual = assertionMatch[2]
-				lastFailedTest = ""
-			}
-		}
-	}
-
-	result := []*pool.TestResult{}
-	for _, data := range formattedOutput {
-		result = append(result, data)
-	}
-
-	return result
 }

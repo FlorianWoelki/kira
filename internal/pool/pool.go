@@ -17,12 +17,12 @@ type TestResult struct {
 	Received string `json:"received" binding:"required"`
 	Actual   string `json:"actual" binding:"required"`
 	Passed   bool   `json:"passed" binding:"required"`
+	RunError string `json:"runError" binding:"required"`
 }
 
 type TestOutput struct {
-	RawOutput string        `json:"rawOutput" binding:"required"`
-	Results   []*TestResult `json:"results" binding:"required"`
-	Time      int64         `json:"time" binding:"required"`
+	Results []TestResult `json:"results" binding:"required"`
+	Time    int64        `json:"time" binding:"required"`
 }
 
 type CodeOutput struct {
@@ -42,7 +42,7 @@ type WorkerPool struct {
 type WorkData struct {
 	Lang        string
 	Code        string
-	Test        string
+	Tests       []TestResult
 	BypassCache bool
 }
 

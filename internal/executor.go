@@ -80,24 +80,6 @@ func (rce *RceEngine) action(data pool.WorkData, ch chan<- pool.CodeOutput) {
 		return
 	}
 
-	testFilename := ""
-	if len(data.Test) != 0 {
-		testFilename, err = CreateTempFile(user.Username, tempDirName, "app_test", language.Extension)
-		if err != nil {
-			rce.systemUsers.Release(user.Uid)
-			DeleteAll(user.Username)
-			ch <- pool.CodeOutput{}
-			return
-		}
-
-		err = WriteToFile(testFilename, data.Test)
-		if err != nil {
-			rce.systemUsers.Release(user.Uid)
-			ch <- pool.CodeOutput{}
-			return
-		}
-	}
-
 	executableFilename := ExecutableFile(user.Username, tempDirName, "app")
 	codeOutput := pool.CodeOutput{User: *user, TempDirName: tempDirName}
 
@@ -123,18 +105,35 @@ func (rce *RceEngine) action(data pool.WorkData, ch chan<- pool.CodeOutput) {
 	}
 
 	// If the length of the test content is not empty, run the tests in the directory.
-	if len(data.Test) != 0 {
+	if len(data.Tests) != 0 {
 		now := time.Now()
-		executableFilename := ExecutableFile(user.Username, tempDirName, "code_test")
-		_, testOutput := rce.executeTestsForFile(user.Username, testFilename, executableFilename, language)
-		actualTime := time.Since(now).Milliseconds()
+		results := []pool.TestResult{}
 
-		prettifiedTestOutput := PrettifyTestOutput(testOutput, language)
+		for _, test := range data.Tests {
+			runOutput, runError := rce.executeFile(user.Username, filename, executableFilename, language)
+			if len(runError) != 0 {
+				results = append(results, pool.TestResult{
+					Name:     test.Name,
+					Received: "",
+					Actual:   test.Actual,
+					Passed:   false,
+					RunError: runError,
+				})
+			} else {
+				normalizedRunOutput := strings.TrimSuffix(runOutput, "\n")
+				results = append(results, pool.TestResult{
+					Name:     test.Name,
+					Received: normalizedRunOutput,
+					Actual:   test.Actual,
+					Passed:   test.Actual == normalizedRunOutput,
+					RunError: "",
+				})
+			}
+		}
 
 		codeOutput.TestOutput = pool.TestOutput{
-			RawOutput: testOutput,
-			Results:   prettifiedTestOutput,
-			Time:      actualTime,
+			Results: results,
+			Time:    time.Since(now).Milliseconds(),
 		}
 	}
 
@@ -147,9 +146,9 @@ func (rce *RceEngine) action(data pool.WorkData, ch chan<- pool.CodeOutput) {
 	rce.CleanUp(user, tempDirName)
 }
 
-func (rce *RceEngine) Dispatch(lang, code string, test string, bypassCache bool) (pool.CodeOutput, error) {
+func (rce *RceEngine) Dispatch(lang, code string, tests []pool.TestResult, bypassCache bool) (pool.CodeOutput, error) {
 	dataChannel := make(chan pool.CodeOutput)
-	rce.pool.SubmitJob(pool.WorkData{Lang: lang, Code: code, Test: test, BypassCache: bypassCache}, rce.action, dataChannel)
+	rce.pool.SubmitJob(pool.WorkData{Lang: lang, Code: code, Tests: tests, BypassCache: bypassCache}, rce.action, dataChannel)
 	output := <-dataChannel
 	return output, nil
 }
