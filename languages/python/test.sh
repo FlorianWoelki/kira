@@ -1,1 +1,0 @@
-runuser -l "$1" -c -- "unshare -n -r timeout -s KILL 3 python3 -m unittest -v $2"
