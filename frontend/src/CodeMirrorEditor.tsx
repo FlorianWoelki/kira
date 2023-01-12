@@ -1,12 +1,14 @@
 import { EditorView, basicSetup } from 'codemirror';
 import { indentWithTab } from '@codemirror/commands';
 import { python } from '@codemirror/lang-python';
+import { json } from '@codemirror/lang-json';
 import { useEffect, useRef } from 'react';
 import { githubLight } from './githubLight';
 import { keymap } from '@codemirror/view';
 import { indentationMarkers } from '@replit/codemirror-indentation-markers';
 
 interface Props {
+  language: 'python' | 'json';
   defaultValue?: string;
   className?: string;
   onChange?: (input: string, options: { line: number; column: number }) => void;
@@ -42,7 +44,7 @@ export const CodeMirrorEditor: React.FC<Props> = (props): JSX.Element => {
           },
         ]),
         basicSetup,
-        python(),
+        props.language === 'python' ? python() : json(),
         githubLight,
         EditorView.updateListener.of((e) => {
           props.onChange?.(e.state.doc.toString(), {

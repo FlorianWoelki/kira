@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@codemirror/commands": "^6.1.2",
+    "@codemirror/lang-json": "^6.0.1",
     "@codemirror/lang-python": "^6.0.4",
     "@codemirror/language": "^6.3.2",
     "@codemirror/state": "^6.1.3",

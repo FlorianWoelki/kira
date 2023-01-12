@@ -28,7 +28,6 @@ interface CodeExecutionResult {
       actual: string;
       passed: boolean;
     }[];
-    rawOutput: string;
     time: number;
   };
 }
@@ -55,7 +54,7 @@ const App: React.FC = (): JSX.Element => {
         body: JSON.stringify({
           language: 'python',
           content: codeEditor.code,
-          test: testEditor.code,
+          tests: JSON.parse(testEditor.code),
         }),
       },
     );
@@ -110,6 +109,7 @@ const App: React.FC = (): JSX.Element => {
             <div className="flex flex-col rounded-lg bg-white overflow-auto h-full">
               <div className="overflow-auto flex-1">
                 <CodeMirrorEditor
+                  language="python"
                   defaultValue={`print("Hello World")
 
 def custom_multiply(a, b):
@@ -133,26 +133,11 @@ def custom_sum(a, b):
             <div className="flex flex-col rounded-lg bg-white overflow-auto h-full">
               <div className="overflow-auto flex-1">
                 <CodeMirrorEditor
-                  defaultValue={`import unittest
-from .app import custom_sum, custom_multiply
-
-class TestProductFunction(unittest.TestCase):
-  def test_multiply(self):
-    self.assertEqual(custom_multiply(1, 1), 1)
-    self.assertEqual(custom_multiply(10, 10), 100)
-    self.assertEqual(custom_multiply(100, 100), 10000)
-
-class TestSumFunction(unittest.TestCase):
-  def test_sum_2(self):
-    self.assertEqual(custom_sum(2, 2), 4)
-    self.assertEqual(custom_sum(20, 20), 40)
-    self.assertEqual(custom_sum(200, 200), 400)
-
-  def test_sum(self):
-    self.assertEqual(custom_sum(1, 1), 2)
-    self.assertEqual(custom_sum(10, 10), 20)
-    self.assertEqual(custom_sum(100, 100), 200)
-    self.assertEqual(custom_sum(1000, 1000), 2000)`}
+                  language="json"
+                  defaultValue={`[
+  { "name": "Test 1", "actual": "2" },
+  { "name": "Test 2", "actual": "2" }
+]`}
                   onChange={(v, options) => {
                     testEditor.setCode(v);
                     testEditor.setEditorOptions(options);
