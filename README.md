@@ -34,14 +34,19 @@ The following section contains all the REST API endpoints. The JSON body and end
   <summary>POST /execute</summary>
 
   <p>
-    The execute endpoint will execute code in a containerized sandbox.
+    The execute endpoint will execute code in a containerized sandbox. Tests for the
+    printed output can also be specified.
   </p>
 
   This JSON structure is an example for the request body:
   ```json
   {
       "language": "python",
-      "content": "print(\"42 Hello World\")"
+      "content": "print(\"42 Hello World\")",
+      "tests" [
+        { "name": "First test case ", "actual": "42 Hello World" },
+        { "name": "First test case ", "actual": "41 Hello World" }
+      ]
   }
   ```
 
