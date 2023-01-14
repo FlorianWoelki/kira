@@ -55,7 +55,8 @@ const App: React.FC = (): JSX.Element => {
         body: JSON.stringify({
           language: 'python',
           content: codeEditor.code,
-          tests: JSON.parse(testEditor.code),
+          tests:
+            testEditor.code.length === 0 ? [] : JSON.parse(testEditor.code),
         }),
       },
     );
@@ -118,7 +119,7 @@ const App: React.FC = (): JSX.Element => {
               <div className="overflow-auto flex-1">
                 <CodeMirrorEditor
                   language="python"
-                  defaultValue={`print("Hello World")
+                  defaultValue={`print(2)
 
 def custom_multiply(a, b):
   return a * b
@@ -185,9 +186,9 @@ def custom_sum(a, b):
 
             <div className="border my-6 border-gray-100"></div>
 
-            <p className="font-semibold">Test Output:</p>
-            {codeResult ? (
+            {codeResult?.testOutput.results?.length ? (
               <>
+                <p className="font-semibold">Test Output:</p>
                 <p className="italic text-sm mb-4">
                   Time: {codeResult.testOutput.time}ms
                 </p>
