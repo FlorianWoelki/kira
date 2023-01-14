@@ -13,6 +13,7 @@ import (
 type executeBody struct {
 	Language string            `json:"language" binding:"required"`
 	Content  string            `json:"content" binding:"required"`
+	Stdin    string            `json:"stdin,omitempty"`
 	Tests    []pool.TestResult `json:"tests,omitempty"`
 }
 
@@ -43,7 +44,7 @@ func Execute(c echo.Context, rceEngine *internal.RceEngine) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	output, err := rceEngine.Dispatch(body.Language, body.Content, body.Tests, bypassCache)
+	output, err := rceEngine.Dispatch(body.Language, body.Content, body.Stdin, body.Tests, bypassCache)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}

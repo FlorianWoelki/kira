@@ -42,6 +42,7 @@ type WorkerPool struct {
 type WorkData struct {
 	Lang        string
 	Code        string
+	Stdin       string
 	Tests       []TestResult
 	BypassCache bool
 }

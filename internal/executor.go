@@ -96,7 +96,7 @@ func (rce *RceEngine) action(data pool.WorkData, ch chan<- pool.CodeOutput) {
 	// Execute the file when there is no error while compiling.
 	if len(codeOutput.CompileOutput.Error) == 0 {
 		now := time.Now()
-		runOutput, runError := rce.executeFile(user.Username, filename, executableFilename, language)
+		runOutput, runError := rce.executeFile(user.Username, filename, data.Stdin, executableFilename, language)
 		codeOutput.RunOutput = pool.Output{
 			Result: runOutput,
 			Error:  runError,
@@ -110,7 +110,7 @@ func (rce *RceEngine) action(data pool.WorkData, ch chan<- pool.CodeOutput) {
 		results := []pool.TestResult{}
 
 		for _, test := range data.Tests {
-			runOutput, runError := rce.executeFile(user.Username, filename, executableFilename, language)
+			runOutput, runError := rce.executeFile(user.Username, filename, data.Stdin, executableFilename, language)
 			if len(runError) != 0 {
 				results = append(results, pool.TestResult{
 					Name:     test.Name,
@@ -146,9 +146,9 @@ func (rce *RceEngine) action(data pool.WorkData, ch chan<- pool.CodeOutput) {
 	rce.CleanUp(user, tempDirName)
 }
 
-func (rce *RceEngine) Dispatch(lang, code string, tests []pool.TestResult, bypassCache bool) (pool.CodeOutput, error) {
+func (rce *RceEngine) Dispatch(lang, code, stdin string, tests []pool.TestResult, bypassCache bool) (pool.CodeOutput, error) {
 	dataChannel := make(chan pool.CodeOutput)
-	rce.pool.SubmitJob(pool.WorkData{Lang: lang, Code: code, Tests: tests, BypassCache: bypassCache}, rce.action, dataChannel)
+	rce.pool.SubmitJob(pool.WorkData{Lang: lang, Code: code, Stdin: stdin, Tests: tests, BypassCache: bypassCache}, rce.action, dataChannel)
 	output := <-dataChannel
 	return output, nil
 }
@@ -189,18 +189,14 @@ func (rce *RceEngine) compileFile(file, executableFile string, language Language
 	return result, errBuffer.String()
 }
 
-func (rce *RceEngine) executeTestsForFile(currentUser, file, executableFile string, language Language) (string, string) {
-	return rce.execute(currentUser, file, "test", executableFile, language)
+func (rce *RceEngine) executeFile(currentUser, file, stdin, executableFile string, language Language) (string, string) {
+	return rce.execute(currentUser, file, stdin, "run", executableFile, language)
 }
 
-func (rce *RceEngine) executeFile(currentUser, file, executableFile string, language Language) (string, string) {
-	return rce.execute(currentUser, file, "run", executableFile, language)
-}
-
-func (rce *RceEngine) execute(currentUser, file, scriptName, executableFile string, language Language) (string, string) {
+func (rce *RceEngine) execute(currentUser, file, stdin, scriptName, executableFile string, language Language) (string, string) {
 	runScript := fmt.Sprintf("/kira/languages/%s/%s.sh", strings.ToLower(language.Name), scriptName)
 
-	run := exec.Command("/bin/bash", runScript, currentUser, file, executableFile)
+	run := exec.Command("/bin/bash", runScript, currentUser, fmt.Sprintf("%s %q", file, stdin), executableFile)
 	head := exec.Command("head", "--bytes", maxOutputBufferCapacity)
 
 	errBuffer := bytes.Buffer{}
