@@ -13,11 +13,12 @@ type Output struct {
 }
 
 type TestResult struct {
-	Name     string `json:"name" binding:"required"`
-	Received string `json:"received" binding:"required"`
-	Actual   string `json:"actual" binding:"required"`
-	Passed   bool   `json:"passed" binding:"required"`
-	RunError string `json:"runError" binding:"required"`
+	Name     string   `json:"name" binding:"required"`
+	Received string   `json:"received" binding:"required"`
+	Actual   string   `json:"actual" binding:"required"`
+	Stdin    []string `json:"stdin,omitempty"`
+	Passed   bool     `json:"passed" binding:"required"`
+	RunError string   `json:"runError" binding:"required"`
 }
 
 type TestOutput struct {
@@ -42,7 +43,7 @@ type WorkerPool struct {
 type WorkData struct {
 	Lang        string
 	Code        string
-	Stdin       string
+	Stdin       []string
 	Tests       []TestResult
 	BypassCache bool
 }

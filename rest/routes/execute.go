@@ -13,7 +13,7 @@ import (
 type executeBody struct {
 	Language string            `json:"language" binding:"required"`
 	Content  string            `json:"content" binding:"required"`
-	Stdin    string            `json:"stdin,omitempty"`
+	Stdin    []string          `json:"stdin,omitempty"`
 	Tests    []pool.TestResult `json:"tests,omitempty"`
 }
 

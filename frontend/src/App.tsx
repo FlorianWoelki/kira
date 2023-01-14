@@ -55,7 +55,7 @@ const App: React.FC = (): JSX.Element => {
         body: JSON.stringify({
           language: 'python',
           content: codeEditor.code,
-          stdin,
+          stdin: [stdin],
           tests:
             testEditor.code.length === 0 ? [] : JSON.parse(testEditor.code),
         }),
