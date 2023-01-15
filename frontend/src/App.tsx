@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Checkbox } from './Checkbox';
 import { CodeMirrorEditor } from './CodeMirrorEditor';
+import { Dropdown } from './Dropdown';
 
 const useCodeMirrorEditor = () => {
   const [code, setCode] = useState<string>('');
@@ -75,27 +76,34 @@ const App: React.FC = (): JSX.Element => {
   return (
     <div className="relative h-screen">
       <div className="flex flex-col h-full">
-        <div className="p-2 flex items-center justify-center space-x-4">
-          <Checkbox
-            id="bypass-cache"
-            onChange={() => setBypassCache((v) => !v)}
-          >
-            Bypass cache?
-          </Checkbox>
-          <button
-            className="flex items-center px-4 py-2 bg-green-400 rounded-lg text-green-800 font-semibold transition duration-100 ease-in-out hover:bg-green-500 disabled:cursor-not-allowed disabled:bg-opacity-50"
-            onClick={runCode}
-            disabled={isLoading}
-          >
-            Run
-          </button>
-          <input
-            type="text"
-            className="p-2 border block rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-            placeholder="Your input"
-            onChange={(e) => setStdin(e.target.value)}
-            value={stdin}
-          />
+        <div className="p-2 flex items-center justify-center">
+          <div className="flex items-center justify-center space-x-4 flex-1">
+            <Checkbox
+              id="bypass-cache"
+              onChange={() => setBypassCache((v) => !v)}
+            >
+              Bypass cache?
+            </Checkbox>
+            <button
+              className="flex items-center px-4 py-2 bg-green-400 rounded-lg text-green-800 font-semibold transition duration-100 ease-in-out hover:bg-green-500 disabled:cursor-not-allowed disabled:bg-opacity-50"
+              onClick={runCode}
+              disabled={isLoading}
+            >
+              Run
+            </button>
+            <input
+              type="text"
+              className="p-2 border block rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              placeholder="Your input"
+              onChange={(e) => setStdin(e.target.value)}
+              value={stdin}
+            />
+          </div>
+
+          <Dropdown
+            title="Templates"
+            items={['Template 1', 'Template 2']}
+          ></Dropdown>
         </div>
 
         <div
