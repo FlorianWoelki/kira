@@ -62,7 +62,7 @@ export const CodeMirrorEditor: React.FC<Props> = (props): JSX.Element => {
     return () => {
       view.destroy();
     };
-  }, []);
+  }, [props.defaultValue]);
 
   return <div ref={ref} className={props.className}></div>;
 };

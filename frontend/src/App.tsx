@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Checkbox } from './Checkbox';
 import { CodeMirrorEditor } from './CodeMirrorEditor';
 import { Dropdown } from './Dropdown';
+import { CodeTemplate, codeTemplates } from './codeTemplates';
 
 const useCodeMirrorEditor = () => {
   const [code, setCode] = useState<string>('');
@@ -37,6 +38,7 @@ const App: React.FC = (): JSX.Element => {
   const [codeResult, setCodeResult] = useState<CodeExecutionResult>();
   const [bypassCache, setBypassCache] = useState<boolean>(false);
   const [stdin, setStdin] = useState<string>('');
+  const [template, setTemplate] = useState<CodeTemplate>(codeTemplates[0]);
 
   const codeEditor = useCodeMirrorEditor();
   const testEditor = useCodeMirrorEditor();
@@ -102,7 +104,12 @@ const App: React.FC = (): JSX.Element => {
 
           <Dropdown
             title="Templates"
-            items={['Template 1', 'Template 2']}
+            items={codeTemplates.map((template) => template.name)}
+            onSelect={(name) =>
+              setTemplate(
+                codeTemplates.find((template) => template.name === name)!,
+              )
+            }
           ></Dropdown>
         </div>
 
@@ -128,13 +135,7 @@ const App: React.FC = (): JSX.Element => {
               <div className="overflow-auto flex-1">
                 <CodeMirrorEditor
                   language="python"
-                  defaultValue={`print(2)
-
-def custom_multiply(a, b):
-  return a * b
-
-def custom_sum(a, b):
-  return a + b`}
+                  defaultValue={template.code}
                   onChange={(v, options) => {
                     codeEditor.setCode(v);
                     codeEditor.setEditorOptions(options);
@@ -152,10 +153,7 @@ def custom_sum(a, b):
               <div className="overflow-auto flex-1">
                 <CodeMirrorEditor
                   language="json"
-                  defaultValue={`[
-  { "name": "Test 1", "actual": "2" },
-  { "name": "Test 2", "actual": "2" }
-]`}
+                  defaultValue={template.testCode}
                   onChange={(v, options) => {
                     testEditor.setCode(v);
                     testEditor.setEditorOptions(options);
