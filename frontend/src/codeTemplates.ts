@@ -23,8 +23,8 @@ def custom_sum(a, b):
 value = sys.argv[1]
 print(value + 1)`,
     testCode: `[
-  { "name": "Test 1", "stdin": "2", "actual": "3" },
-  { "name": "Test 2", "stdin": "3", "actual": "4" }
+  { "name": "Test 1", "stdin": ["2"], "actual": "3" },
+  { "name": "Test 2", "stdin": ["3"], "actual": "4" }
 ]`,
   },
 ];
