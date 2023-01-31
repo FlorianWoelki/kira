@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Checkbox } from './Checkbox';
 import { CodeMirrorEditor } from './CodeMirrorEditor';
 import { Dropdown } from './Dropdown';
@@ -44,6 +44,10 @@ const App: React.FC = (): JSX.Element => {
   const testEditor = useCodeMirrorEditor();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    setStdin(template.defaultStdin);
+  }, [template.defaultStdin]);
 
   const runCode = async (): Promise<void> => {
     if (isLoading) {
@@ -204,12 +208,8 @@ const App: React.FC = (): JSX.Element => {
                     <span>
                       {result.passed ? '🟩' : '🟥'} Name: {result.name}
                     </span>
-                    {!result.passed && (
-                      <>
-                        <span>Actual value: {result.actual}</span>
-                        <span>Received value: {result.received}</span>
-                      </>
-                    )}
+                    <span>Actual value: {result.actual}</span>
+                    <span>Received value: {result.received}</span>
                   </p>
                 ))}
               </>
