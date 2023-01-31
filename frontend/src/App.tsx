@@ -78,8 +78,8 @@ const App: React.FC = (): JSX.Element => {
   return (
     <div className="relative h-screen">
       <div className="flex flex-col h-full">
-        <div className="p-2 flex items-center justify-center">
-          <div className="flex items-center justify-center space-x-4 flex-1">
+        <div className="flex items-center justify-center p-2">
+          <div className="flex items-center justify-center flex-1 space-x-4">
             <Checkbox
               id="bypass-cache"
               onChange={() => setBypassCache((v) => !v)}
@@ -87,7 +87,7 @@ const App: React.FC = (): JSX.Element => {
               Bypass cache?
             </Checkbox>
             <button
-              className="flex items-center px-4 py-2 bg-green-400 rounded-lg text-green-800 font-semibold transition duration-100 ease-in-out hover:bg-green-500 disabled:cursor-not-allowed disabled:bg-opacity-50"
+              className="flex items-center px-4 py-2 font-semibold text-green-800 transition duration-100 ease-in-out bg-green-400 rounded-lg hover:bg-green-500 disabled:cursor-not-allowed disabled:bg-opacity-50"
               onClick={runCode}
               disabled={isLoading}
             >
@@ -95,7 +95,7 @@ const App: React.FC = (): JSX.Element => {
             </button>
             <input
               type="text"
-              className="p-2 border block rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="block p-2 border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               placeholder="Your input"
               onChange={(e) => setStdin(e.target.value)}
               value={stdin}
@@ -114,16 +114,16 @@ const App: React.FC = (): JSX.Element => {
         </div>
 
         <div
-          className="grid grid-cols-5 bg-gray-200 gap-2 p-2"
+          className="grid grid-cols-5 gap-2 p-2 bg-gray-200"
           style={{ height: 'calc(100% - 56px)' }}
         >
-          <div className="rounded-lg bg-white overflow-auto p-2 space-y-4">
-            <h2 className="font-bold text-xl">Files</h2>
+          <div className="p-2 space-y-4 overflow-auto bg-white rounded-lg">
+            <h2 className="text-xl font-bold">Files</h2>
 
             <ul className="space-y-1">
               <li
                 aria-selected="true"
-                className="rounded-lg bg-gray-200 px-2 py-1 hover:bg-gray-200 transition duration-100 ease-in-out"
+                className="px-2 py-1 transition duration-100 ease-in-out bg-gray-200 rounded-lg hover:bg-gray-200"
               >
                 <span>main.py</span>
               </li>
@@ -131,8 +131,8 @@ const App: React.FC = (): JSX.Element => {
           </div>
 
           <div className="flex flex-col justify-between col-span-2 gap-2">
-            <div className="flex flex-col rounded-lg bg-white overflow-auto h-full">
-              <div className="overflow-auto flex-1">
+            <div className="flex flex-col h-full overflow-auto bg-white rounded-lg">
+              <div className="flex-1 overflow-auto">
                 <CodeMirrorEditor
                   language="python"
                   defaultValue={template.code}
@@ -143,14 +143,14 @@ const App: React.FC = (): JSX.Element => {
                 ></CodeMirrorEditor>
               </div>
               {codeEditor.editorOptions && (
-                <div className="border-t p-2 text-sm text-gray-600">
+                <div className="p-2 text-sm text-gray-600 border-t">
                   Line: {codeEditor.editorOptions.line} Column:{' '}
                   {codeEditor.editorOptions.column}
                 </div>
               )}
             </div>
-            <div className="flex flex-col rounded-lg bg-white overflow-auto h-full">
-              <div className="overflow-auto flex-1">
+            <div className="flex flex-col h-full overflow-auto bg-white rounded-lg">
+              <div className="flex-1 overflow-auto">
                 <CodeMirrorEditor
                   language="json"
                   defaultValue={template.testCode}
@@ -161,7 +161,7 @@ const App: React.FC = (): JSX.Element => {
                 ></CodeMirrorEditor>
               </div>
               {testEditor.editorOptions && (
-                <div className="border-t p-2 text-sm text-gray-600">
+                <div className="p-2 text-sm text-gray-600 border-t">
                   Line: {testEditor.editorOptions.line} Column:{' '}
                   {testEditor.editorOptions.column}
                 </div>
@@ -169,7 +169,7 @@ const App: React.FC = (): JSX.Element => {
             </div>
           </div>
 
-          <div className="rounded-lg bg-white p-4 overflow-auto h-full col-span-2">
+          <div className="h-full col-span-2 p-4 overflow-auto bg-white rounded-lg">
             <p className="font-semibold">Program Output:</p>
             {codeResult ? (
               codeResult.compileOutput.error || codeResult.runOutput.error ? (
@@ -179,7 +179,7 @@ const App: React.FC = (): JSX.Element => {
                 </>
               ) : (
                 <>
-                  <p className="italic text-sm mb-4">
+                  <p className="mb-4 text-sm italic">
                     Time: {codeResult.runOutput.time}ms
                   </p>
                   {normalizeOutput(codeResult.runOutput.result).map((v, i) => (
@@ -191,12 +191,12 @@ const App: React.FC = (): JSX.Element => {
               ''
             )}
 
-            <div className="border my-6 border-gray-100"></div>
+            <div className="my-6 border border-gray-100"></div>
 
             {codeResult?.testOutput.results?.length ? (
               <>
                 <p className="font-semibold">Test Output:</p>
-                <p className="italic text-sm mb-4">
+                <p className="mb-4 text-sm italic">
                   Time: {codeResult.testOutput.time}ms
                 </p>
                 {codeResult.testOutput.results.map((result) => (
