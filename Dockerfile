@@ -3,7 +3,7 @@ ARG TARGETARCH
 
 RUN apt-get update --fix-missing \
     && DEBIAN_FRONTEND="noninteractive" apt-get install \
-    curl xz-utils unzip python3 nodejs -y \
+    curl xz-utils unzip -y \
     && apt-get clean
 
 # Golang 1.19.4 installation
