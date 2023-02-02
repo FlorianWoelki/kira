@@ -36,7 +36,7 @@ interface CodeExecutionResult {
 
 const App: React.FC = (): JSX.Element => {
   const [codeResult, setCodeResult] = useState<CodeExecutionResult>();
-  const [bypassCache, setBypassCache] = useState<boolean>(false);
+  const [bypassCache, setBypassCache] = useState<boolean>(true);
   const [stdin, setStdin] = useState<string>('');
   const [template, setTemplate] = useState<CodeTemplate>(codeTemplates[0]);
 
@@ -86,6 +86,7 @@ const App: React.FC = (): JSX.Element => {
           <div className="flex items-center justify-center flex-1 space-x-4">
             <Checkbox
               id="bypass-cache"
+              checked={bypassCache}
               onChange={() => setBypassCache((v) => !v)}
             >
               Bypass cache?
