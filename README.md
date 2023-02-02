@@ -13,7 +13,7 @@ For the installation of kira, you need to have Docker and Go installed.
 It is required for the sandbox environment to have a docker image that exposes an API that includes all the functionality for executing the code. For that, you need to execute the following command to build the image and start the container:
 
 ```sh
-docker-compose up
+docker compose up
 ```
 
 ## Usage
@@ -44,8 +44,8 @@ The following section contains all the REST API endpoints. The JSON body and end
       "language": "python",
       "content": "print(\"42 Hello World\")",
       "tests" [
-        { "name": "First test case ", "actual": "42 Hello World" },
-        { "name": "First test case ", "actual": "41 Hello World" }
+        { "name": "First test case", "stdin": [], "actual": "42 Hello World" },
+        { "name": "Second test case", "stdin": [], "actual": "42 Hello World" }
       ]
   }
   ```
