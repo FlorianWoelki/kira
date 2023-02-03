@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/florianwoelki/kira/internal/cache"
@@ -109,29 +110,37 @@ func (rce *RceEngine) action(data pool.WorkData, ch chan<- pool.CodeOutput) {
 		now := time.Now()
 		results := []pool.TestResult{}
 
+		// Create a wait group to let the tests run concurrently and wait until all executed.
+		var wg sync.WaitGroup
+		wg.Add(len(data.Tests))
 		for _, test := range data.Tests {
-			runOutput, runError := rce.executeFile(user.Username, filename, test.Stdin, executableFilename, language)
-			if len(runError) != 0 {
-				results = append(results, pool.TestResult{
-					Name:     test.Name,
-					Received: "",
-					Actual:   test.Actual,
-					Stdin:    test.Stdin,
-					Passed:   false,
-					RunError: runError,
-				})
-			} else {
-				normalizedRunOutput := strings.TrimSuffix(runOutput, "\n")
-				results = append(results, pool.TestResult{
-					Name:     test.Name,
-					Received: normalizedRunOutput,
-					Actual:   test.Actual,
-					Stdin:    test.Stdin,
-					Passed:   test.Actual == normalizedRunOutput,
-					RunError: "",
-				})
-			}
+			go func(test pool.TestResult) {
+				runOutput, runError := rce.executeFile(user.Username, filename, test.Stdin, executableFilename, language)
+				if len(runError) != 0 {
+					results = append(results, pool.TestResult{
+						Name:     test.Name,
+						Received: "",
+						Actual:   test.Actual,
+						Stdin:    test.Stdin,
+						Passed:   false,
+						RunError: runError,
+					})
+				} else {
+					normalizedRunOutput := strings.TrimSuffix(runOutput, "\n")
+					results = append(results, pool.TestResult{
+						Name:     test.Name,
+						Received: normalizedRunOutput,
+						Actual:   test.Actual,
+						Stdin:    test.Stdin,
+						Passed:   test.Actual == normalizedRunOutput,
+						RunError: "",
+					})
+				}
+				wg.Done()
+			}(test)
 		}
+
+		wg.Wait()
 
 		codeOutput.TestOutput = pool.TestOutput{
 			Results: results,
