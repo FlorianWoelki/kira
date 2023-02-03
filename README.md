@@ -43,7 +43,7 @@ The following section contains all the REST API endpoints. The JSON body and end
   {
       "language": "python",
       "content": "print(\"42 Hello World\")",
-      "tests" [
+      "tests": [
         { "name": "First test case", "stdin": [], "actual": "42 Hello World" },
         { "name": "Second test case", "stdin": [], "actual": "42 Hello World" }
       ]
