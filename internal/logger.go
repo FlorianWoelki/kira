@@ -33,6 +33,7 @@ func NewLogger(rotation string) (*zap.Logger, error) {
 		return Logger, nil
 	}
 
+	// Create new database with new collection inside.
 	db = NewDatabase()
 	err := db.Connect()
 	if err != nil {
@@ -62,14 +63,18 @@ func NewLogger(rotation string) (*zap.Logger, error) {
 
 	config := zap.NewProductionEncoderConfig()
 	config.EncodeTime = zapcore.ISO8601TimeEncoder
-	encoder := zapcore.NewJSONEncoder(config)
 	mw := mongoWriter{database: db}
-	writer := zapcore.AddSync(mw)
+
+	// Create all logging encoder.
+	jsonEncoder := zapcore.NewJSONEncoder(config)
+	consoleEncoder := zapcore.NewConsoleEncoder(config)
+
+	// Creates the core zap logger with console and mongodb writing.
 	defaultLogLevel := zapcore.DebugLevel
 	core := zapcore.NewTee(
-		zapcore.NewCore(encoder, writer, defaultLogLevel),
+		zapcore.NewCore(jsonEncoder, zapcore.AddSync(mw), defaultLogLevel),
+		zapcore.NewCore(consoleEncoder, zapcore.AddSync(os.Stdout), defaultLogLevel),
 	)
-
 	Logger = zap.New(core, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel))
 	return Logger, nil
 }
