@@ -25,9 +25,12 @@ var (
 	Logger  *zap.Logger
 	db      *Database
 	cronJob *cron.Cron
-	logger  *log.Logger = log.New(os.Stdout, "language: ", log.LstdFlags|log.Lshortfile)
+	// An internal logger that does only log functionalities like rotating.
+	logger *log.Logger = log.New(os.Stdout, "language: ", log.LstdFlags|log.Lshortfile)
 )
 
+// NewLogger creates a new logger with a specific rotation. It also connects to the
+// database and creates a new `zap` logger.
 func NewLogger(rotation string) (*zap.Logger, error) {
 	if Logger != nil {
 		return Logger, nil
@@ -79,11 +82,15 @@ func NewLogger(rotation string) (*zap.Logger, error) {
 	return Logger, nil
 }
 
+// rotateDatabase rotates the database by defining the new rotated collection name and
+// then creating it in the database.
 func rotateDatabase() (string, error) {
 	collectionName := fmt.Sprintf("logs_%d", time.Now().UnixNano())
 	return collectionName, db.CreateCollection(collectionName)
 }
 
+// CloseLogger sets the initialized logger to `nil`, stops the cronjob and disconnects
+// from the database.
 func CloseLogger() {
 	Logger = nil
 	cronJob.Stop()
@@ -99,6 +106,8 @@ type logValues struct {
 	ResponseBody string `json:"responseBody"`
 }
 
+// mongoWriter implements the `io.Writer` interface and it is being used for logging to
+// mongodb.
 type mongoWriter struct {
 	database *Database
 }
