@@ -49,7 +49,12 @@ func CreateBinaries() error {
 		dir := filepath.Base(filepath.Dir(path))
 		if _, ok := LoadedLanguages[dir]; ok && strings.HasSuffix(path, "install.sh") {
 			scriptsLogger.Printf("Downloading %s binaries...", dir)
-			runInstallScript(path, dir)
+			err := exec.Command("bash", path).Run()
+			if err != nil {
+				return err
+			}
+
+			scriptsLogger.Printf("%s binaries downloaded successfully.", dir)
 		}
 
 		return nil
@@ -60,17 +65,5 @@ func CreateBinaries() error {
 	}
 
 	scriptsLogger.Println("Binaries have been downloaded successfully.")
-	return nil
-}
-
-// runInstallScript can be used to run the bash script that is being specified.
-// TODO: Rename to `runBashScript` and use for other methods as well.
-func runInstallScript(path, binary string) error {
-	err := exec.Command("bash", path).Run()
-	if err != nil {
-		return err
-	}
-
-	scriptsLogger.Printf("%s binaries downloaded successfully.", binary)
 	return nil
 }
