@@ -28,11 +28,14 @@ type Language struct {
 	Compiled bool
 }
 
+// LoadLanguages load all the specified active languages and define all the neccessary
+// information for the `Language` struct.
 func LoadLanguages(activeLanguages []string) error {
 	languageLogger.Println("Loading languages...")
 	LoadedLanguages = make(map[string]Language)
 
 	err := filepath.Walk("./languages", func(path string, info fs.FileInfo, err error) error {
+		// Only get the information from the `metadata.json` file.
 		if strings.HasSuffix(path, "metadata.json") {
 			fileBytes, err := os.ReadFile(path)
 			if err != nil {
@@ -44,10 +47,12 @@ func LoadLanguages(activeLanguages []string) error {
 				return err
 			}
 
+			// Check if the language is a compiled language.
 			dir := filepath.Dir(path)
 			_, err = os.Stat(fmt.Sprintf("%s/%s", dir, "compile.sh"))
 			language.Compiled = err == nil
 
+			// Check if the language is in the defined active languages.
 			shouldInsert := true
 			if len(activeLanguages) != 0 {
 				shouldInsert = false
@@ -74,6 +79,7 @@ func LoadLanguages(activeLanguages []string) error {
 	return nil
 }
 
+// GetLanguages gets all loaded languages as an array.
 func GetLanguages() ([]Language, error) {
 	if len(LoadedLanguages) == 0 {
 		return nil, fmt.Errorf("could not find any to be loaded languages")
@@ -87,6 +93,7 @@ func GetLanguages() ([]Language, error) {
 	return result, nil
 }
 
+// GetLanguageByName gets a language by name from the loaded languages.
 func GetLanguageByName(key string) (Language, error) {
 	find, ok := LoadedLanguages[strings.ToLower(key)]
 	if !ok {

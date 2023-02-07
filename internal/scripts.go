@@ -49,7 +49,7 @@ func CreateBinaries() error {
 		dir := filepath.Base(filepath.Dir(path))
 		if _, ok := LoadedLanguages[dir]; ok && strings.HasSuffix(path, "install.sh") {
 			scriptsLogger.Printf("Downloading %s binaries...", dir)
-			err := exec.Command("bash", path).Run()
+			err := exec.Command("/bin/bash", path).Run()
 			if err != nil {
 				return err
 			}
