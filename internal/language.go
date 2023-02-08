@@ -15,17 +15,11 @@ var languageLogger *log.Logger = log.New(os.Stdout, "language: ", log.LstdFlags|
 var LoadedLanguages map[string]Language
 
 type Language struct {
-	Name      string `json:"name" binding:"required"`
-	Version   string `json:"version" binding:"required"`
-	Extension string `json:"extension" binding:"required"`
-	Timeout   int    `json:"timeout" binding:"required"`
-	TestInfo  struct {
-		Regex           string `json:"regex,omitempty"`
-		FailedTestRegex string `json:"failedTestRegex,omitempty"`
-		AssertionRegex  string `json:"assertionRegex,omitempty"`
-		PassedString    string `json:"passedString,omitempty"`
-	} `json:"testInfo,omitempty"`
-	Compiled bool
+	Name      string `json:"name"`
+	Version   string `json:"version"`
+	Extension string `json:"extension"`
+	Timeout   int    `json:"timeout"`
+	Compiled  bool   `json:"compiled"`
 }
 
 // LoadLanguages load all the specified active languages and define all the neccessary

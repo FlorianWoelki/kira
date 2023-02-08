@@ -13,12 +13,12 @@ type Output struct {
 }
 
 type TestResult struct {
-	Name     string   `json:"name" binding:"required"`
-	Received string   `json:"received" binding:"required"`
-	Actual   string   `json:"actual" binding:"required"`
-	Stdin    []string `json:"stdin,omitempty"`
-	Passed   bool     `json:"passed" binding:"required"`
-	RunError string   `json:"runError" binding:"required"`
+	Name     string   `json:"name"`
+	Received string   `json:"received"`
+	Actual   string   `json:"actual"`
+	Stdin    []string `json:"stdin"`
+	Passed   bool     `json:"passed"`
+	RunError string   `json:"runError"`
 }
 
 type TestOutput struct {
