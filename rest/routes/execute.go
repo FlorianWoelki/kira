@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/florianwoelki/kira/internal"
 	"github.com/florianwoelki/kira/internal/pool"
+	"github.com/florianwoelki/kira/pkg"
 	"github.com/labstack/echo/v4"
 )
 
@@ -23,7 +23,7 @@ type executeResponse struct {
 	TestOutput    pool.TestOutput `json:"testOutput"`
 }
 
-func Execute(c echo.Context, rceEngine *internal.RceEngine) error {
+func Execute(c echo.Context, rceEngine *pkg.RceEngine) error {
 	// Setting default values so that the optional fields are not empty.
 	body := executeBody{
 		Tests: []pool.TestResult{},

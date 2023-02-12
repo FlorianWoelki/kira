@@ -3,16 +3,16 @@ package routes
 import (
 	"net/http"
 
-	"github.com/florianwoelki/kira/internal"
+	"github.com/florianwoelki/kira/pkg"
 	"github.com/labstack/echo/v4"
 )
 
 type languagesResponse struct {
-	Languages []internal.Language `json:"languages"`
+	Languages []pkg.Language `json:"languages"`
 }
 
 func Languages(c echo.Context) error {
-	languages, err := internal.GetLanguages()
+	languages, err := pkg.GetLanguages()
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
