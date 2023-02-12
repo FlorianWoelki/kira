@@ -12,14 +12,21 @@ import (
 
 var languageLogger *log.Logger = log.New(os.Stdout, "language: ", log.LstdFlags|log.Lshortfile)
 
+// LoadedLanguages contains all the languages with an identifier as a key and the struct
+// as a value.
 var LoadedLanguages map[string]Language
 
 type Language struct {
-	Name      string `json:"name"`
-	Version   string `json:"version"`
+	// Name of the language.
+	Name string `json:"name"`
+	// Version that is currently used.
+	Version string `json:"version"`
+	// Extension of the to be executed files for the language.
 	Extension string `json:"extension"`
-	Timeout   int    `json:"timeout"`
-	Compiled  bool   `json:"compiled"`
+	// Timeout of the execution, when the code will be terminated.
+	Timeout int `json:"timeout"`
+	// Compiled set whether the language needs to be compiled beforehand.
+	Compiled bool `json:"compiled"`
 }
 
 // LoadLanguages load all the specified active languages and define all the neccessary
