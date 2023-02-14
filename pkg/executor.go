@@ -16,16 +16,22 @@ import (
 )
 
 const (
-	amountOfUsers           = 50
+	// amountOfUsers is the amount of system users that are created and are available for
+	// code execution.
+	amountOfUsers = 50
+	// maxOutputBufferCapacity is the maximum capacity of the output buffer.
 	maxOutputBufferCapacity = "65332"
 )
 
+// RceEngine is the main struct which contains the worker pool, the system users
+// and the cache.
 type RceEngine struct {
 	systemUsers *pool.SystemUsers
 	pool        *pool.WorkerPool
 	cache       *cache.Cache[pool.CodeOutput]
 }
 
+// NewRceEngine creates a new RceEngine instance that can be used to execute code.
 func NewRceEngine() *RceEngine {
 	return &RceEngine{
 		systemUsers: pool.NewSystemUser(amountOfUsers),
@@ -35,12 +41,14 @@ func NewRceEngine() *RceEngine {
 }
 
 func (rce *RceEngine) action(data pool.WorkData, ch chan<- pool.CodeOutput) {
+	// Get the language by the name.
 	language, err := GetLanguageByName(data.Lang)
 	if err != nil {
 		ch <- pool.CodeOutput{}
 		return
 	}
 
+	// Check if the code is already in the cache, if so, return and send the cached output.
 	var cacheOutput pool.CodeOutput
 	if !data.BypassCache {
 		cacheOutput, err = rce.cache.Get(language.Name, data.Code)
@@ -51,6 +59,7 @@ func (rce *RceEngine) action(data pool.WorkData, ch chan<- pool.CodeOutput) {
 		}
 	}
 
+	// Acquire a system user to execute the code.
 	user, err := rce.systemUsers.Acquire()
 	if err != nil {
 		rce.systemUsers.Release(user.Uid)
@@ -60,6 +69,7 @@ func (rce *RceEngine) action(data pool.WorkData, ch chan<- pool.CodeOutput) {
 
 	tempDirName := uuid.New().String()
 
+	// Create a temporary directory that is used to store the user's files in it.
 	err = internal.CreateTempDir(user.Username, tempDirName)
 	if err != nil {
 		rce.systemUsers.Release(user.Uid)
@@ -67,6 +77,7 @@ func (rce *RceEngine) action(data pool.WorkData, ch chan<- pool.CodeOutput) {
 		return
 	}
 
+	// Create a temporary file that is used to store the user's code in it.
 	filename, err := internal.CreateTempFile(user.Username, tempDirName, "app", language.Extension)
 	if err != nil {
 		rce.systemUsers.Release(user.Uid)
@@ -75,6 +86,7 @@ func (rce *RceEngine) action(data pool.WorkData, ch chan<- pool.CodeOutput) {
 		return
 	}
 
+	// Write the code to the file.
 	err = internal.WriteToFile(filename, data.Code)
 	if err != nil {
 		rce.systemUsers.Release(user.Uid)
@@ -85,6 +97,7 @@ func (rce *RceEngine) action(data pool.WorkData, ch chan<- pool.CodeOutput) {
 	executableFilename := internal.ExecutableFile(user.Username, tempDirName, "app")
 	codeOutput := pool.CodeOutput{User: *user, TempDirName: tempDirName}
 
+	// Compile the file when the language needs to be compiled.
 	if language.Compiled {
 		now := time.Now()
 		compileOutput, compileError := rce.compileFile(filename, executableFilename, language)
@@ -158,6 +171,8 @@ func (rce *RceEngine) action(data pool.WorkData, ch chan<- pool.CodeOutput) {
 	rce.CleanUp(user, tempDirName)
 }
 
+// Dispatch dispatches a new job to the worker pool and returns the output of the
+// submitted job.
 func (rce *RceEngine) Dispatch(lang, code string, stdin []string, tests []pool.TestResult, bypassCache bool) (pool.CodeOutput, error) {
 	dataChannel := make(chan pool.CodeOutput)
 	rce.pool.SubmitJob(pool.WorkData{Lang: lang, Code: code, Stdin: stdin, Tests: tests, BypassCache: bypassCache}, rce.action, dataChannel)
@@ -165,6 +180,8 @@ func (rce *RceEngine) Dispatch(lang, code string, stdin []string, tests []pool.T
 	return output, nil
 }
 
+// CleanUp cleans up the user's temporary directory, kills all running processes for this
+// user, releases the user's uid and restores the user's directory.
 func (rce *RceEngine) CleanUp(user *pool.User, tempDirName string) {
 	internal.DeleteAll(user.Username)
 	rce.cleanProcesses(user.Username)
@@ -172,6 +189,8 @@ func (rce *RceEngine) CleanUp(user *pool.User, tempDirName string) {
 	rce.systemUsers.Release(user.Uid)
 }
 
+// compileFile compiles the file and returns the output and possible error of the
+// compilation. It uses the `compile.sh` script in the language directory to compile.
 func (rce *RceEngine) compileFile(file, executableFile string, language Language) (string, string) {
 	compileScript := fmt.Sprintf("/kira/languages/%s/compile.sh", strings.ToLower(language.Name))
 
@@ -201,12 +220,10 @@ func (rce *RceEngine) compileFile(file, executableFile string, language Language
 	return result, errBuffer.String()
 }
 
+// executeFile executes the file and returns the output and possible error of the execution.
+// It uses the `run.sh` script in the language directory to execute.
 func (rce *RceEngine) executeFile(currentUser, file string, stdin []string, executableFile string, language Language) (string, string) {
-	return rce.execute(currentUser, file, stdin, "run", executableFile, language)
-}
-
-func (rce *RceEngine) execute(currentUser, file string, stdin []string, scriptName, executableFile string, language Language) (string, string) {
-	runScript := fmt.Sprintf("/kira/languages/%s/%s.sh", strings.ToLower(language.Name), scriptName)
+	runScript := fmt.Sprintf("/kira/languages/%s/%s.sh", strings.ToLower(language.Name), "run")
 
 	input := ""
 	for _, in := range stdin {
@@ -240,10 +257,13 @@ func (rce *RceEngine) execute(currentUser, file string, stdin []string, scriptNa
 	return result, errBuffer.String()
 }
 
+// cleanProcesses cleans up all processes of the user by killing all processes of the user.
 func (rce *RceEngine) cleanProcesses(currentUser string) error {
 	return exec.Command("pkill", "-9", "-u", currentUser).Run()
 }
 
+// restoreUserDir restores the user directory if it was deleted.
+// Creates the directory at `/tmp/<user>` by running the `mkdir` command as the user.
 func (rce *RceEngine) restoreUserDir(currentUser string) {
 	userDir := "/tmp/" + currentUser
 	if _, err := os.ReadDir(userDir); err != nil {
