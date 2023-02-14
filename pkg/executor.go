@@ -108,7 +108,7 @@ func (rce *RceEngine) action(data pool.WorkData, ch chan<- pool.CodeOutput) {
 		}
 	}
 
-	// Execute the file when there is no error while compiling.
+	// Execute the file when there is no error while compiling and execute the tests.
 	if len(codeOutput.CompileOutput.Error) == 0 {
 		now := time.Now()
 		runOutput, runError := rce.executeFile(user.Username, filename, data.Stdin, executableFilename, language)
@@ -117,48 +117,48 @@ func (rce *RceEngine) action(data pool.WorkData, ch chan<- pool.CodeOutput) {
 			Error:  runError,
 			Time:   time.Since(now).Milliseconds(),
 		}
-	}
 
-	// If the length of the test content is not empty, run the tests in the directory.
-	if len(data.Tests) != 0 {
-		now := time.Now()
-		results := []pool.TestResult{}
+		// If the length of the test content is not empty, run the tests in the directory.
+		if len(data.Tests) != 0 {
+			now := time.Now()
+			results := []pool.TestResult{}
 
-		// Create a wait group to let the tests run concurrently and wait until all executed.
-		var wg sync.WaitGroup
-		wg.Add(len(data.Tests))
-		for _, test := range data.Tests {
-			go func(test pool.TestResult) {
-				runOutput, runError := rce.executeFile(user.Username, filename, test.Stdin, executableFilename, language)
-				if len(runError) != 0 {
-					results = append(results, pool.TestResult{
-						Name:     test.Name,
-						Received: "",
-						Actual:   test.Actual,
-						Stdin:    test.Stdin,
-						Passed:   false,
-						RunError: runError,
-					})
-				} else {
-					normalizedRunOutput := strings.TrimSuffix(runOutput, "\n")
-					results = append(results, pool.TestResult{
-						Name:     test.Name,
-						Received: normalizedRunOutput,
-						Actual:   test.Actual,
-						Stdin:    test.Stdin,
-						Passed:   test.Actual == normalizedRunOutput,
-						RunError: "",
-					})
-				}
-				wg.Done()
-			}(test)
-		}
+			// Create a wait group to let the tests run concurrently and wait until all executed.
+			var wg sync.WaitGroup
+			wg.Add(len(data.Tests))
+			for _, test := range data.Tests {
+				go func(test pool.TestResult) {
+					runOutput, runError := rce.executeFile(user.Username, filename, test.Stdin, executableFilename, language)
+					if len(runError) != 0 {
+						results = append(results, pool.TestResult{
+							Name:     test.Name,
+							Received: "",
+							Actual:   test.Actual,
+							Stdin:    test.Stdin,
+							Passed:   false,
+							RunError: runError,
+						})
+					} else {
+						normalizedRunOutput := strings.TrimSuffix(runOutput, "\n")
+						results = append(results, pool.TestResult{
+							Name:     test.Name,
+							Received: normalizedRunOutput,
+							Actual:   test.Actual,
+							Stdin:    test.Stdin,
+							Passed:   test.Actual == normalizedRunOutput,
+							RunError: "",
+						})
+					}
+					wg.Done()
+				}(test)
+			}
 
-		wg.Wait()
+			wg.Wait()
 
-		codeOutput.TestOutput = pool.TestOutput{
-			Results: results,
-			Time:    time.Since(now).Milliseconds(),
+			codeOutput.TestOutput = pool.TestOutput{
+				Results: results,
+				Time:    time.Since(now).Milliseconds(),
+			}
 		}
 	}
 
