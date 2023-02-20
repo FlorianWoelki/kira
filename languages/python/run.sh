@@ -1,1 +1,1 @@
-runuser -l "$1" -c -- "unshare -n -r timeout -s KILL 3 python3 $2"
+runuser -l "$1" -c -- "unshare -r timeout -s KILL 3 blocksyscalls python3 $2"
