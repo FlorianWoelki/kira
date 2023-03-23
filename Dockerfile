@@ -4,7 +4,7 @@ ARG TARGETARCH
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Replace default ubuntu source with mirrors.
-RUN sed -i 's/htt[p|ps]:\/\/archive.ubuntu.com\/ubuntu\//mirror:\/\/mirrors.ubuntu.com\/mirrors.txt/g' /etc/apt/sources.list
+# RUN sed -i 's/htt[p|ps]:\/\/archive.ubuntu.com\/ubuntu\//mirror:\/\/mirrors.ubuntu.com\/mirrors.txt/g' /etc/apt/sources.list
 
 RUN apt-get update --fix-missing \
     && apt-get install curl pkg-config libseccomp-dev gcc -y \
