@@ -55,6 +55,22 @@ const App: React.FC = (): JSX.Element => {
     }
 
     setIsLoading(true);
+
+    // WebSocket just for testing.
+    const ws = new WebSocket('ws://localhost:9090/execute');
+    ws.addEventListener('open', () => {
+      console.log('websocket connected!');
+      ws.send(
+        JSON.stringify({
+          language: 'python',
+          content: codeEditor.code,
+        }),
+      );
+    });
+    ws.addEventListener('message', (event) => {
+      console.log(event);
+    });
+
     const result = await fetch(
       `http://localhost:9090/execute${bypassCache ? '?bypass_cache=true' : ''}`,
       {
