@@ -48,12 +48,18 @@ type WorkData struct {
 	BypassCache bool
 }
 
-type actionFunc = func(data WorkData, ch chan<- CodeOutput)
+type ActionOutput struct {
+	Once   chan CodeOutput
+	Stream chan string
+}
+
+type actionFunc = func(data WorkData, output ActionOutput, terminate chan<- bool)
 
 type WorkType struct {
-	data   WorkData
-	action actionFunc
-	ch     chan<- CodeOutput
+	data         WorkData
+	action       actionFunc
+	actionOutput ActionOutput
+	terminate    chan<- bool
 }
 
 func NewWorkerPool(nWorkers int) *WorkerPool {
@@ -73,8 +79,8 @@ func NewWorkerPool(nWorkers int) *WorkerPool {
 	}
 }
 
-func (wp *WorkerPool) SubmitJob(data WorkData, action actionFunc, ch chan<- CodeOutput) {
-	work := WorkType{data, action, ch}
+func (wp *WorkerPool) SubmitJob(data WorkData, action actionFunc, actionOutput ActionOutput, terminate chan<- bool) {
+	work := WorkType{data, action, actionOutput, terminate}
 	wp.queue.enqueue(work)
 }
 
@@ -89,6 +95,6 @@ func poolWorker[T any](wg *sync.WaitGroup, queue *ConcurrentQueue[T], idx int) {
 		}
 
 		work := val.(WorkType)
-		work.action(work.data, work.ch)
+		work.action(work.data, work.actionOutput, work.terminate)
 	}
 }

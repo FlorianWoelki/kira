@@ -44,10 +44,14 @@ func Execute(c echo.Context, rceEngine *pkg.RceEngine) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	output, err := rceEngine.Dispatch(body.Language, body.Content, body.Stdin, body.Tests, bypassCache)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-	}
+	// Dispatch the job only once to the execution engine.
+	output := rceEngine.DispatchOnce(pool.WorkData{
+		Lang:        body.Language,
+		Code:        body.Content,
+		Stdin:       body.Stdin,
+		Tests:       body.Tests,
+		BypassCache: bypassCache,
+	})
 
 	c.JSON(http.StatusOK, executeResponse{
 		CompileOutput: output.CompileOutput,
