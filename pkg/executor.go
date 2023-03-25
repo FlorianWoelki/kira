@@ -50,8 +50,9 @@ func (rce *RceEngine) action(data pool.WorkData, output pool.ActionOutput, termi
 	}
 
 	// Check if the code is already in the cache, if so, return and send the cached output.
+	// Also checks, if one-time execution is activated.
 	var cacheOutput pool.CodeOutput
-	if !data.BypassCache {
+	if !data.BypassCache && output.Stream == nil {
 		cacheOutput, err = rce.cache.Get(language.Name, data.Code)
 
 		if err == nil {
@@ -170,12 +171,14 @@ func (rce *RceEngine) action(data pool.WorkData, output pool.ActionOutput, termi
 		}
 	}
 
+	// Only sends the acquired code output when one-time execution is activated.
 	if output.Once != nil {
 		output.Once <- codeOutput
 	}
 
 	terminate <- true
 
+	// Only cache the result when it is activated and when the output is not streamed.
 	if !data.BypassCache && output.Stream == nil {
 		rce.cache.Set(language.Name, data.Code, codeOutput)
 	}
@@ -194,21 +197,29 @@ func (rce *RceEngine) DispatchOnce(data pool.WorkData) pool.CodeOutput {
 	return rce.Dispatch(data, PipeChannel{})
 }
 
+// DispatchStream dispatches a new job to the worker pool and streams the output of the
+// submitted job to the `pipeChannel` parameter.
 func (rce *RceEngine) DispatchStream(data pool.WorkData, pipeChannel PipeChannel) {
 	rce.Dispatch(data, pipeChannel)
 }
 
+// Dispatch dispatches a new job to the worker pool with streaming or one-time execution
+// functionality. When the `pipeChannel` is an empty struct, it will only execute the
+// job once, but when the argument is not empty, it will stream to the output to the
+// corresponding channels.
 func (rce *RceEngine) Dispatch(data pool.WorkData, pipeChannel PipeChannel) pool.CodeOutput {
 	if pipeChannel != (PipeChannel{}) {
-		// Allow websocket connection.
+		// Websocket connection and streams the output to the channels.
 		actionOutput := pool.ActionOutput{Stream: pipeChannel.Data}
 		rce.pool.SubmitJob(data, rce.action, actionOutput, pipeChannel.Terminate)
 		return pool.CodeOutput{}
 	} else {
-		// Allow one full execution.
+		// One-time execution.
 		terminate := make(chan bool)
 		actionOutput := pool.ActionOutput{Once: make(chan pool.CodeOutput)}
 		rce.pool.SubmitJob(data, rce.action, actionOutput, terminate)
+		// When the `terminate` channel was called, it will break this for loop and return
+		// either an empty struct or the struct with the output.
 		currentOutput := pool.CodeOutput{}
 		for {
 			select {
