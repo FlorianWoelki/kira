@@ -15,6 +15,7 @@ type socketData struct {
 }
 
 type wsResponse struct {
+	Type      string `json:"type"`
 	RunOutput string `json:"runOutput"`
 }
 
@@ -45,18 +46,26 @@ func ExecuteWs(c echo.Context, rceEngine *pkg.RceEngine) error {
 
 		for {
 			select {
-			case shouldTerminate := <-pipeChannel.Terminate:
-				fmt.Println("terminate", shouldTerminate)
-				return
 			case output := <-pipeChannel.Data:
 				// Send the result of the code back to the client.
 				err = websocket.JSON.Send(ws, wsResponse{
+					Type:      "output",
 					RunOutput: output,
 				})
 				if err != nil {
 					fmt.Println("sending error:", err)
 					return
 				}
+			case <-pipeChannel.Terminate:
+				err = websocket.JSON.Send(ws, wsResponse{
+					Type:      "terminate",
+					RunOutput: "",
+				})
+				if err != nil {
+					fmt.Println("sending error:", err)
+					return
+				}
+				return
 			}
 		}
 	}).ServeHTTP(c.Response(), c.Request())

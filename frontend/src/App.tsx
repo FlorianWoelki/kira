@@ -71,13 +71,18 @@ const App: React.FC = (): JSX.Element => {
       );
     });
     ws.addEventListener('message', (event) => {
-      setWebsocketResult((prev) => {
-        const parsed = JSON.parse(event.data);
-        console.log('from ws:', parsed.runOutput);
-        const result = [...prev];
-        result.push(parsed.runOutput);
-        return result;
-      });
+      const parsed = JSON.parse(event.data);
+      console.log('from ws:', parsed);
+      if (parsed.type === 'output') {
+        setWebsocketResult((prev) => {
+          const result = [...prev];
+          result.push(parsed.runOutput);
+          return result;
+        });
+      } else if (parsed.type === 'terminate') {
+        console.log('websocket disconnected!');
+        ws.close();
+      }
     });
 
     // const result = await fetch(
