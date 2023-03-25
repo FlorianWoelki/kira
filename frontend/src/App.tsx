@@ -71,23 +71,23 @@ const App: React.FC = (): JSX.Element => {
       console.log(event);
     });
 
-    const result = await fetch(
-      `http://localhost:9090/execute${bypassCache ? '?bypass_cache=true' : ''}`,
-      {
-        method: 'POST',
-        body: JSON.stringify({
-          language: 'python',
-          content: codeEditor.code,
-          stdin: [stdin],
-          tests:
-            testEditor.code.length === 0 ? [] : JSON.parse(testEditor.code),
-        }),
-      },
-    );
+    // const result = await fetch(
+    //   `http://localhost:9090/execute${bypassCache ? '?bypass_cache=true' : ''}`,
+    //   {
+    //     method: 'POST',
+    //     body: JSON.stringify({
+    //       language: 'python',
+    //       content: codeEditor.code,
+    //       stdin: [stdin],
+    //       tests:
+    //         testEditor.code.length === 0 ? [] : JSON.parse(testEditor.code),
+    //     }),
+    //   },
+    // );
 
-    const jsonResult: CodeExecutionResult = await result.json();
-    console.log(jsonResult);
-    setCodeResult(jsonResult);
+    // const jsonResult: CodeExecutionResult = await result.json();
+    // console.log(jsonResult);
+    // setCodeResult(jsonResult);
     setIsLoading(false);
   };
 
