@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"os"
@@ -171,6 +172,72 @@ func (rce *RceEngine) action(data pool.WorkData, ch chan<- pool.CodeOutput) {
 	rce.CleanUp(user, tempDirName)
 }
 
+func (rce *RceEngine) ExecuteWs(code, lang string, data chan<- string, terminate chan<- bool) {
+	// Get the language by the name.
+	language, err := GetLanguageByName(lang)
+	if err != nil {
+		terminate <- true
+		return
+	}
+
+	// Acquire a system user to execute the code.
+	user, err := rce.systemUsers.Acquire()
+	if err != nil {
+		rce.systemUsers.Release(user.Uid)
+		terminate <- true
+		return
+	}
+
+	tempDirName := uuid.New().String()
+
+	// Create a temporary directory that is used to store the user's files in it.
+	err = internal.CreateTempDir(user.Username, tempDirName)
+	if err != nil {
+		rce.systemUsers.Release(user.Uid)
+		terminate <- true
+		return
+	}
+
+	// Create a temporary file that is used to store the user's code in it.
+	filename, err := internal.CreateTempFile(user.Username, tempDirName, "app", language.Extension)
+	if err != nil {
+		rce.systemUsers.Release(user.Uid)
+		internal.DeleteAll(user.Username)
+		terminate <- true
+		return
+	}
+
+	// Write the code to the file.
+	err = internal.WriteToFile(filename, code)
+	if err != nil {
+		rce.systemUsers.Release(user.Uid)
+		terminate <- true
+		return
+	}
+
+	executableFilename := internal.ExecutableFile(user.Username, tempDirName, "app")
+	codeOutput := pool.CodeOutput{User: *user, TempDirName: tempDirName}
+
+	// Compile the file when the language needs to be compiled.
+	if language.Compiled {
+		now := time.Now()
+		compileOutput, compileError := rce.compileFile(filename, executableFilename, language)
+		codeOutput.CompileOutput = pool.Output{
+			Result: compileOutput,
+			Error:  compileError,
+			Time:   time.Since(now).Milliseconds(),
+		}
+	}
+
+	// Execute the file when there is no error while compiling and execute the tests.
+	if len(codeOutput.CompileOutput.Error) == 0 {
+		rce.executeFileWs(user.Username, filename, executableFilename, language, data)
+		terminate <- true
+	}
+
+	rce.CleanUp(user, tempDirName)
+}
+
 // Dispatch dispatches a new job to the worker pool and returns the output of the
 // submitted job.
 func (rce *RceEngine) Dispatch(lang, code string, stdin []string, tests []pool.TestResult, bypassCache bool) (pool.CodeOutput, error) {
@@ -218,6 +285,41 @@ func (rce *RceEngine) compileFile(file, executableFile string, language Language
 	}
 
 	return result, errBuffer.String()
+}
+
+func (rce *RceEngine) executeFileWs(currentUser, file, executableFile string, language Language, data chan<- string) {
+	runScript := fmt.Sprintf("/kira/languages/%s/%s.sh", strings.ToLower(language.Name), "run")
+
+	cmd := exec.Command("/bin/bash", runScript, currentUser, fmt.Sprintf("%s %s", file, ""), executableFile)
+	// head := exec.Command("head", "--bytes", maxOutputBufferCapacity)
+
+	// errBuffer := bytes.Buffer{}
+	// run.Stderr = &errBuffer
+
+	pipe, _ := cmd.StdoutPipe()
+	// head.Stdin = pipe
+	// headOutput := bytes.Buffer{}
+	// head.Stdout = &headOutput
+
+	if err := cmd.Start(); err != nil {
+		fmt.Println("error while starting:", err)
+	}
+
+	scanner := bufio.NewScanner(pipe)
+	// scanner.Split(bufio.ScanLines)
+	go func() {
+		for scanner.Scan() {
+			line := scanner.Text()
+			fmt.Println("pipe:", line)
+			data <- line
+		}
+	}()
+
+	// _ = head.Start()
+	if err := cmd.Wait(); err != nil {
+		fmt.Println("error while waiting:", err)
+	}
+	// _ = head.Wait()
 }
 
 // executeFile executes the file and returns the output and possible error of the execution.

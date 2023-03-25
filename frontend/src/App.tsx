@@ -35,6 +35,7 @@ interface CodeExecutionResult {
 }
 
 const App: React.FC = (): JSX.Element => {
+  const [websocketResult, setWebsocketResult] = useState<string[]>([]);
   const [codeResult, setCodeResult] = useState<CodeExecutionResult>();
   const [bypassCache, setBypassCache] = useState<boolean>(true);
   const [stdin, setStdin] = useState<string>('');
@@ -68,7 +69,13 @@ const App: React.FC = (): JSX.Element => {
       );
     });
     ws.addEventListener('message', (event) => {
-      console.log(event);
+      setWebsocketResult((prev) => {
+        const parsed = JSON.parse(event.data);
+        console.log('from ws:', parsed.runOutput);
+        const result = [...prev];
+        result.push(parsed.runOutput);
+        return result;
+      });
     });
 
     // const result = await fetch(
@@ -192,6 +199,10 @@ const App: React.FC = (): JSX.Element => {
 
           <div className="h-full col-span-2 p-4 overflow-auto bg-white rounded-lg">
             <p className="font-semibold">Program Output:</p>
+
+            {websocketResult.length !== 0 &&
+              websocketResult.map((line, index) => <p key={index}>{line}</p>)}
+
             {codeResult ? (
               codeResult.compileOutput.error || codeResult.runOutput.error ? (
                 <>

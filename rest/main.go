@@ -94,6 +94,11 @@ func main() {
 
 	// Define REST endpoints.
 	e.GET("/languages", routes.Languages)
+	// Enables a websocket connection for piping the execution output.
+	e.GET("/execute", func(c echo.Context) error {
+		return routes.ExecuteWs(c, rce)
+	})
+	// Post request for executing code without piping the output.
 	e.POST("/execute", func(c echo.Context) error {
 		return routes.Execute(c, rce)
 	})
