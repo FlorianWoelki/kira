@@ -114,55 +114,59 @@ func (rce *RceEngine) action(data pool.WorkData, output pool.ActionOutput, termi
 
 	// Execute the file when there is no error while compiling and execute the tests.
 	if len(codeOutput.CompileOutput.Error) == 0 {
-		now := time.Now()
-		runOutput, runError := rce.executeFile(user.Username, filename, data.Stdin, executableFilename, language)
-		codeOutput.RunOutput = pool.Output{
-			Result: runOutput,
-			Error:  runError,
-			Time:   time.Since(now).Milliseconds(),
-		}
-
-		// If the length of the test content is not empty, run the tests in the directory.
-		if len(data.Tests) != 0 {
+		if output.Once != nil {
 			now := time.Now()
-			results := []pool.TestResult{}
-
-			// Create a wait group to let the tests run concurrently and wait until all executed.
-			var wg sync.WaitGroup
-			wg.Add(len(data.Tests))
-			for _, test := range data.Tests {
-				go func(test pool.TestResult) {
-					runOutput, runError := rce.executeFile(user.Username, filename, test.Stdin, executableFilename, language)
-					if len(runError) != 0 {
-						results = append(results, pool.TestResult{
-							Name:     test.Name,
-							Received: "",
-							Actual:   test.Actual,
-							Stdin:    test.Stdin,
-							Passed:   false,
-							RunError: runError,
-						})
-					} else {
-						normalizedRunOutput := strings.TrimSuffix(runOutput, "\n")
-						results = append(results, pool.TestResult{
-							Name:     test.Name,
-							Received: normalizedRunOutput,
-							Actual:   test.Actual,
-							Stdin:    test.Stdin,
-							Passed:   test.Actual == normalizedRunOutput,
-							RunError: "",
-						})
-					}
-					wg.Done()
-				}(test)
+			runOutput, runError := rce.executeFile(user.Username, filename, data.Stdin, executableFilename, language)
+			codeOutput.RunOutput = pool.Output{
+				Result: runOutput,
+				Error:  runError,
+				Time:   time.Since(now).Milliseconds(),
 			}
 
-			wg.Wait()
+			// If the length of the test content is not empty, run the tests in the directory.
+			if len(data.Tests) != 0 {
+				now := time.Now()
+				results := []pool.TestResult{}
 
-			codeOutput.TestOutput = pool.TestOutput{
-				Results: results,
-				Time:    time.Since(now).Milliseconds(),
+				// Create a wait group to let the tests run concurrently and wait until all executed.
+				var wg sync.WaitGroup
+				wg.Add(len(data.Tests))
+				for _, test := range data.Tests {
+					go func(test pool.TestResult) {
+						runOutput, runError := rce.executeFile(user.Username, filename, test.Stdin, executableFilename, language)
+						if len(runError) != 0 {
+							results = append(results, pool.TestResult{
+								Name:     test.Name,
+								Received: "",
+								Actual:   test.Actual,
+								Stdin:    test.Stdin,
+								Passed:   false,
+								RunError: runError,
+							})
+						} else {
+							normalizedRunOutput := strings.TrimSuffix(runOutput, "\n")
+							results = append(results, pool.TestResult{
+								Name:     test.Name,
+								Received: normalizedRunOutput,
+								Actual:   test.Actual,
+								Stdin:    test.Stdin,
+								Passed:   test.Actual == normalizedRunOutput,
+								RunError: "",
+							})
+						}
+						wg.Done()
+					}(test)
+				}
+
+				wg.Wait()
+
+				codeOutput.TestOutput = pool.TestOutput{
+					Results: results,
+					Time:    time.Since(now).Milliseconds(),
+				}
 			}
+		} else if output.Stream != nil {
+			rce.executeFileWs(user.Username, filename, executableFilename, language, output.Stream)
 		}
 	}
 
@@ -172,82 +176,16 @@ func (rce *RceEngine) action(data pool.WorkData, output pool.ActionOutput, termi
 
 	terminate <- true
 
-	if !data.BypassCache {
+	if !data.BypassCache && output.Stream == nil {
 		rce.cache.Set(language.Name, data.Code, codeOutput)
 	}
 
 	rce.CleanUp(user, tempDirName)
 }
 
-func (rce *RceEngine) ExecuteWs(code, lang string, data chan<- string, terminate chan<- bool) {
-	// Get the language by the name.
-	language, err := GetLanguageByName(lang)
-	if err != nil {
-		terminate <- true
-		return
-	}
-
-	// Acquire a system user to execute the code.
-	user, err := rce.systemUsers.Acquire()
-	if err != nil {
-		rce.systemUsers.Release(user.Uid)
-		terminate <- true
-		return
-	}
-
-	tempDirName := uuid.New().String()
-
-	// Create a temporary directory that is used to store the user's files in it.
-	err = internal.CreateTempDir(user.Username, tempDirName)
-	if err != nil {
-		rce.systemUsers.Release(user.Uid)
-		terminate <- true
-		return
-	}
-
-	// Create a temporary file that is used to store the user's code in it.
-	filename, err := internal.CreateTempFile(user.Username, tempDirName, "app", language.Extension)
-	if err != nil {
-		rce.systemUsers.Release(user.Uid)
-		internal.DeleteAll(user.Username)
-		terminate <- true
-		return
-	}
-
-	// Write the code to the file.
-	err = internal.WriteToFile(filename, code)
-	if err != nil {
-		rce.systemUsers.Release(user.Uid)
-		terminate <- true
-		return
-	}
-
-	executableFilename := internal.ExecutableFile(user.Username, tempDirName, "app")
-	codeOutput := pool.CodeOutput{User: *user, TempDirName: tempDirName}
-
-	// Compile the file when the language needs to be compiled.
-	if language.Compiled {
-		now := time.Now()
-		compileOutput, compileError := rce.compileFile(filename, executableFilename, language)
-		codeOutput.CompileOutput = pool.Output{
-			Result: compileOutput,
-			Error:  compileError,
-			Time:   time.Since(now).Milliseconds(),
-		}
-	}
-
-	// Execute the file when there is no error while compiling and execute the tests.
-	if len(codeOutput.CompileOutput.Error) == 0 {
-		rce.executeFileWs(user.Username, filename, executableFilename, language, data)
-		terminate <- true
-	}
-
-	rce.CleanUp(user, tempDirName)
-}
-
 type PipeChannel struct {
-	data      chan<- string
-	terminate chan<- bool
+	Data      chan string
+	Terminate chan bool
 }
 
 // DispatchOnce dispatches a new job to the worker pool and returns the output of the
@@ -256,13 +194,19 @@ func (rce *RceEngine) DispatchOnce(data pool.WorkData) pool.CodeOutput {
 	return rce.Dispatch(data, PipeChannel{})
 }
 
+func (rce *RceEngine) DispatchStream(data pool.WorkData, pipeChannel PipeChannel) {
+	rce.Dispatch(data, pipeChannel)
+}
+
 func (rce *RceEngine) Dispatch(data pool.WorkData, pipeChannel PipeChannel) pool.CodeOutput {
-	terminate := make(chan bool)
 	if pipeChannel != (PipeChannel{}) {
 		// Allow websocket connection.
+		actionOutput := pool.ActionOutput{Stream: pipeChannel.Data}
+		rce.pool.SubmitJob(data, rce.action, actionOutput, pipeChannel.Terminate)
 		return pool.CodeOutput{}
 	} else {
 		// Allow one full execution.
+		terminate := make(chan bool)
 		actionOutput := pool.ActionOutput{Once: make(chan pool.CodeOutput)}
 		rce.pool.SubmitJob(data, rce.action, actionOutput, terminate)
 		currentOutput := pool.CodeOutput{}
@@ -340,7 +284,6 @@ func (rce *RceEngine) executeFileWs(currentUser, file, executableFile string, la
 	go func() {
 		for scanner.Scan() {
 			line := scanner.Text()
-			fmt.Println("pipe:", line)
 			data <- line
 		}
 	}()

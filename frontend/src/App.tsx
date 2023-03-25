@@ -56,45 +56,47 @@ const App: React.FC = (): JSX.Element => {
     }
 
     setIsLoading(true);
+    setCodeResult(undefined);
+    setWebsocketResult([]);
 
     // WebSocket just for testing.
-    // const ws = new WebSocket('ws://localhost:9090/execute');
-    // ws.addEventListener('open', () => {
-    //   console.log('websocket connected!');
-    //   ws.send(
-    //     JSON.stringify({
-    //       language: 'python',
-    //       content: codeEditor.code,
-    //     }),
-    //   );
-    // });
-    // ws.addEventListener('message', (event) => {
-    //   setWebsocketResult((prev) => {
-    //     const parsed = JSON.parse(event.data);
-    //     console.log('from ws:', parsed.runOutput);
-    //     const result = [...prev];
-    //     result.push(parsed.runOutput);
-    //     return result;
-    //   });
-    // });
-
-    const result = await fetch(
-      `http://localhost:9090/execute${bypassCache ? '?bypass_cache=true' : ''}`,
-      {
-        method: 'POST',
-        body: JSON.stringify({
+    const ws = new WebSocket('ws://localhost:9090/execute');
+    ws.addEventListener('open', () => {
+      console.log('websocket connected!');
+      ws.send(
+        JSON.stringify({
           language: 'python',
           content: codeEditor.code,
-          stdin: [stdin],
-          tests:
-            testEditor.code.length === 0 ? [] : JSON.parse(testEditor.code),
         }),
-      },
-    );
+      );
+    });
+    ws.addEventListener('message', (event) => {
+      setWebsocketResult((prev) => {
+        const parsed = JSON.parse(event.data);
+        console.log('from ws:', parsed.runOutput);
+        const result = [...prev];
+        result.push(parsed.runOutput);
+        return result;
+      });
+    });
 
-    const jsonResult: CodeExecutionResult = await result.json();
-    console.log(jsonResult);
-    setCodeResult(jsonResult);
+    // const result = await fetch(
+    //   `http://localhost:9090/execute${bypassCache ? '?bypass_cache=true' : ''}`,
+    //   {
+    //     method: 'POST',
+    //     body: JSON.stringify({
+    //       language: 'python',
+    //       content: codeEditor.code,
+    //       stdin: [stdin],
+    //       tests:
+    //         testEditor.code.length === 0 ? [] : JSON.parse(testEditor.code),
+    //     }),
+    //   },
+    // );
+
+    // const jsonResult: CodeExecutionResult = await result.json();
+    // console.log(jsonResult);
+    // setCodeResult(jsonResult);
     setIsLoading(false);
   };
 
