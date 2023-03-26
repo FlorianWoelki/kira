@@ -10,8 +10,9 @@ import (
 )
 
 type socketData struct {
-	Language string `json:"language"`
-	Content  string `json:"content"`
+	Language string   `json:"language" binding:"required"`
+	Content  string   `json:"content" binding:"required"`
+	Stdin    []string `json:"stdin,omitempty"`
 }
 
 type wsResponse struct {
@@ -39,7 +40,7 @@ func ExecuteWs(c echo.Context, rceEngine *pkg.RceEngine) error {
 		go rceEngine.DispatchStream(pool.WorkData{
 			Lang:        data.Language,
 			Code:        data.Content,
-			Stdin:       []string{},
+			Stdin:       data.Stdin,
 			Tests:       []pool.TestResult{},
 			BypassCache: true,
 		}, pipeChannel)

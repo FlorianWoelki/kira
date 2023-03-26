@@ -167,7 +167,7 @@ func (rce *RceEngine) action(data pool.WorkData, output pool.ActionOutput, termi
 				}
 			}
 		} else if output.Stream != nil {
-			rce.executeFileWs(user.Username, filename, executableFilename, language, output.Stream)
+			rce.executeFileWs(user.Username, filename, executableFilename, data.Stdin, language, output.Stream)
 		}
 	}
 
@@ -272,10 +272,19 @@ func (rce *RceEngine) compileFile(file, executableFile string, language Language
 	return result, errBuffer.String()
 }
 
-func (rce *RceEngine) executeFileWs(currentUser, file, executableFile string, language Language, data chan<- string) {
+func (rce *RceEngine) executeFileWs(currentUser, file, executableFile string, stdin []string, language Language, data chan<- string) {
 	runScript := fmt.Sprintf("/kira/languages/%s/%s.sh", strings.ToLower(language.Name), "run")
 
-	cmd := exec.Command("/bin/bash", runScript, currentUser, fmt.Sprintf("%s %s", file, ""), executableFile)
+	input := ""
+	for _, in := range stdin {
+		input += fmt.Sprintf("%q ", in)
+	}
+	input = strings.TrimSpace(input)
+
+	cmd := exec.Command("/bin/bash", runScript, currentUser, fmt.Sprintf("%s %s", file, input), executableFile)
+	errBuffer := bytes.Buffer{}
+	cmd.Stderr = &errBuffer
+
 	pipe, _ := cmd.StdoutPipe()
 
 	if err := cmd.Start(); err != nil {
@@ -297,8 +306,10 @@ func (rce *RceEngine) executeFileWs(currentUser, file, executableFile string, la
 		}
 	}()
 
-	if err := cmd.Wait(); err != nil {
-		fmt.Println("error while waiting:", err)
+	_ = cmd.Wait()
+
+	if errBuffer.Len() != 0 {
+		data <- errBuffer.String()
 	}
 }
 

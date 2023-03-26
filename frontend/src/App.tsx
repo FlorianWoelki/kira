@@ -67,6 +67,7 @@ const App: React.FC = (): JSX.Element => {
         JSON.stringify({
           language: 'python',
           content: codeEditor.code,
+          stdin: [stdin],
         }),
       );
     });
