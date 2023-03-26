@@ -21,7 +21,7 @@ const (
 	// code execution.
 	amountOfUsers = 50
 	// maxOutputBufferCapacity is the maximum capacity of the output buffer.
-	maxOutputBufferCapacity = "65332"
+	maxOutputBufferCapacity = 65332
 )
 
 // RceEngine is the main struct which contains the worker pool, the system users
@@ -247,7 +247,7 @@ func (rce *RceEngine) compileFile(file, executableFile string, language Language
 	compileScript := fmt.Sprintf("/kira/languages/%s/compile.sh", strings.ToLower(language.Name))
 
 	compile := exec.Command("/bin/bash", compileScript, file, executableFile)
-	head := exec.Command("head", "--bytes", maxOutputBufferCapacity)
+	head := exec.Command("head", "--bytes", fmt.Sprint(maxOutputBufferCapacity))
 
 	errBuffer := bytes.Buffer{}
 	compile.Stderr = &errBuffer
@@ -276,34 +276,30 @@ func (rce *RceEngine) executeFileWs(currentUser, file, executableFile string, la
 	runScript := fmt.Sprintf("/kira/languages/%s/%s.sh", strings.ToLower(language.Name), "run")
 
 	cmd := exec.Command("/bin/bash", runScript, currentUser, fmt.Sprintf("%s %s", file, ""), executableFile)
-	// head := exec.Command("head", "--bytes", maxOutputBufferCapacity)
-
-	// errBuffer := bytes.Buffer{}
-	// run.Stderr = &errBuffer
-
 	pipe, _ := cmd.StdoutPipe()
-	// head.Stdin = pipe
-	// headOutput := bytes.Buffer{}
-	// head.Stdout = &headOutput
 
 	if err := cmd.Start(); err != nil {
 		fmt.Println("error while starting:", err)
 	}
 
 	scanner := bufio.NewScanner(pipe)
-	// scanner.Split(bufio.ScanLines)
+	scanner.Split(bufio.ScanLines)
 	go func() {
+		outputBuffer := ""
 		for scanner.Scan() {
 			line := scanner.Text()
+			outputBuffer += line
+			if len(outputBuffer) >= maxOutputBufferCapacity {
+				break
+			}
+
 			data <- line
 		}
 	}()
 
-	// _ = head.Start()
 	if err := cmd.Wait(); err != nil {
 		fmt.Println("error while waiting:", err)
 	}
-	// _ = head.Wait()
 }
 
 // executeFile executes the file and returns the output and possible error of the execution.
@@ -318,7 +314,7 @@ func (rce *RceEngine) executeFile(currentUser, file string, stdin []string, exec
 	input = strings.TrimSpace(input)
 
 	run := exec.Command("/bin/bash", runScript, currentUser, fmt.Sprintf("%s %s", file, input), executableFile)
-	head := exec.Command("head", "--bytes", maxOutputBufferCapacity)
+	head := exec.Command("head", "--bytes", fmt.Sprint(maxOutputBufferCapacity))
 
 	errBuffer := bytes.Buffer{}
 	run.Stderr = &errBuffer
