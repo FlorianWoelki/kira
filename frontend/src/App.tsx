@@ -38,6 +38,7 @@ const App: React.FC = (): JSX.Element => {
   const [websocketResult, setWebsocketResult] = useState<string[]>([]);
   const [codeResult, setCodeResult] = useState<CodeExecutionResult>();
   const [bypassCache, setBypassCache] = useState<boolean>(true);
+  const [enableWebsocket, setEnableWebsocket] = useState<boolean>(true);
   const [stdin, setStdin] = useState<string>('');
   const [template, setTemplate] = useState<CodeTemplate>(codeTemplates[0]);
 
@@ -60,49 +61,54 @@ const App: React.FC = (): JSX.Element => {
     setWebsocketResult([]);
 
     // WebSocket just for testing.
-    const ws = new WebSocket('ws://localhost:9090/execute');
-    ws.addEventListener('open', () => {
-      console.log('websocket connected!');
-      ws.send(
-        JSON.stringify({
-          language: 'python',
-          content: codeEditor.code,
-          stdin: [stdin],
-        }),
+    if (enableWebsocket) {
+      const ws = new WebSocket('ws://localhost:9090/execute');
+      ws.addEventListener('open', () => {
+        console.log('websocket connected!');
+        ws.send(
+          JSON.stringify({
+            language: 'python',
+            content: codeEditor.code,
+            stdin: [stdin],
+          }),
+        );
+      });
+      ws.addEventListener('message', (event) => {
+        const parsed = JSON.parse(event.data);
+        console.log('from ws:', parsed);
+        if (parsed.type === 'output') {
+          setWebsocketResult((prev) => {
+            const result = [...prev];
+            result.push(parsed.runOutput);
+            return result;
+          });
+        } else if (parsed.type === 'terminate') {
+          console.log('websocket disconnected!');
+          ws.close();
+        }
+      });
+    } else {
+      const result = await fetch(
+        `http://localhost:9090/execute${
+          bypassCache ? '?bypass_cache=true' : ''
+        }`,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            language: 'python',
+            content: codeEditor.code,
+            stdin: [stdin],
+            tests:
+              testEditor.code.length === 0 ? [] : JSON.parse(testEditor.code),
+          }),
+        },
       );
-    });
-    ws.addEventListener('message', (event) => {
-      const parsed = JSON.parse(event.data);
-      console.log('from ws:', parsed);
-      if (parsed.type === 'output') {
-        setWebsocketResult((prev) => {
-          const result = [...prev];
-          result.push(parsed.runOutput);
-          return result;
-        });
-      } else if (parsed.type === 'terminate') {
-        console.log('websocket disconnected!');
-        ws.close();
-      }
-    });
 
-    // const result = await fetch(
-    //   `http://localhost:9090/execute${bypassCache ? '?bypass_cache=true' : ''}`,
-    //   {
-    //     method: 'POST',
-    //     body: JSON.stringify({
-    //       language: 'python',
-    //       content: codeEditor.code,
-    //       stdin: [stdin],
-    //       tests:
-    //         testEditor.code.length === 0 ? [] : JSON.parse(testEditor.code),
-    //     }),
-    //   },
-    // );
+      const jsonResult: CodeExecutionResult = await result.json();
+      console.log(jsonResult);
+      setCodeResult(jsonResult);
+    }
 
-    // const jsonResult: CodeExecutionResult = await result.json();
-    // console.log(jsonResult);
-    // setCodeResult(jsonResult);
     setIsLoading(false);
   };
 
@@ -115,6 +121,13 @@ const App: React.FC = (): JSX.Element => {
       <div className="flex flex-col h-full">
         <div className="flex items-center justify-center p-2">
           <div className="flex items-center justify-center flex-1 space-x-4">
+            <Checkbox
+              id="enable-websocket"
+              checked={enableWebsocket}
+              onChange={() => setEnableWebsocket((v) => !v)}
+            >
+              Enable WebSocket?
+            </Checkbox>
             <Checkbox
               id="bypass-cache"
               checked={bypassCache}
