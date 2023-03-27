@@ -57,6 +57,8 @@ func main() {
 	}
 
 	e := echo.New()
+	loggerGroup := e.Group("")
+
 	// Apply middlewares.
 	e.Use(middleware.RateLimiterWithConfig(middleware.RateLimiterConfig{
 		Skipper: middleware.DefaultSkipper,
@@ -76,7 +78,8 @@ func main() {
 		AllowOrigins: origins,
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 	}))
-	e.Use(middleware.BodyDump(func(ctx echo.Context, reqBody, resBody []byte) {
+	// Only apply logging to the logger group.
+	loggerGroup.Use(middleware.BodyDump(func(ctx echo.Context, reqBody, resBody []byte) {
 		pkg.Logger.Info(
 			"request",
 			zap.String("requestBody", string(reqBody)),
@@ -95,11 +98,11 @@ func main() {
 	// Define REST endpoints.
 	e.GET("/languages", routes.Languages)
 	// Enables a websocket connection for piping the execution output.
-	e.GET("/execute", func(c echo.Context) error {
+	loggerGroup.GET("/execute", func(c echo.Context) error {
 		return routes.ExecuteWs(c, rce)
 	})
 	// Post request for executing code without piping the output.
-	e.POST("/execute", func(c echo.Context) error {
+	loggerGroup.POST("/execute", func(c echo.Context) error {
 		return routes.Execute(c, rce)
 	})
 
