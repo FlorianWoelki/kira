@@ -187,7 +187,9 @@ func (rce *RceEngine) action(data pool.WorkData, output pool.ActionOutput, termi
 }
 
 type PipeChannel struct {
-	Data      chan string
+	// Data which represents the streamed output by the execution.
+	Data chan string
+	// Terminate describes whether the execution has terminated or not.
 	Terminate chan bool
 }
 
@@ -272,6 +274,8 @@ func (rce *RceEngine) compileFile(file, executableFile string, language Language
 	return result, errBuffer.String()
 }
 
+// executeFileWs executes the file and pipes the output (that is being scanned in a
+// go routine) to the `data` channel.
 func (rce *RceEngine) executeFileWs(currentUser, file, executableFile string, stdin []string, language Language, data chan<- string) {
 	runScript := fmt.Sprintf("/kira/languages/%s/%s.sh", strings.ToLower(language.Name), "run")
 
