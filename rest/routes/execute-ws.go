@@ -1,11 +1,13 @@
 package routes
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/florianwoelki/kira/internal/pool"
 	"github.com/florianwoelki/kira/pkg"
 	"github.com/labstack/echo/v4"
+	"go.uber.org/zap"
 	"golang.org/x/net/websocket"
 )
 
@@ -48,27 +50,57 @@ func ExecuteWs(c echo.Context, rceEngine *pkg.RceEngine) error {
 		for {
 			select {
 			case output := <-pipeChannel.Data:
-				// Send the result of the code back to the client.
-				err = websocket.JSON.Send(ws, wsResponse{
+				response := wsResponse{
 					Type:      "output",
 					RunOutput: output,
-				})
+				}
+
+				// Send the result of the code back to the client.
+				err = websocket.JSON.Send(ws, response)
 				if err != nil {
 					fmt.Println("sending error:", err)
 					return
 				}
+
+				logResponse(data, response)
 			case <-pipeChannel.Terminate:
-				err = websocket.JSON.Send(ws, wsResponse{
+				response := wsResponse{
 					Type:      "terminate",
 					RunOutput: "",
-				})
+				}
+				err = websocket.JSON.Send(ws, response)
 				if err != nil {
 					fmt.Println("sending error:", err)
 					return
 				}
+
+				logResponse(data, response)
 				return
 			}
 		}
 	}).ServeHTTP(c.Response(), c.Request())
+
 	return nil
+}
+
+// logResponse takes in the socket data as a request and the to be logged response for
+// that request. It will log to the specific logger with `pkg.Logger`.
+func logResponse(request socketData, response wsResponse) {
+	dataBytes, err := json.Marshal(request)
+	if err != nil {
+		fmt.Println("marshalling error:", err)
+		return
+	}
+
+	responseBytes, err := json.Marshal(response)
+	if err != nil {
+		fmt.Println("marshalling error:", err)
+		return
+	}
+
+	pkg.Logger.Info(
+		"ws-request",
+		zap.String("requestBody", string(dataBytes)),
+		zap.String("responseBody", string(responseBytes)),
+	)
 }

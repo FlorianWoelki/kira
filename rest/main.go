@@ -80,6 +80,11 @@ func main() {
 	}))
 	// Only apply logging to the logger group.
 	loggerGroup.Use(middleware.BodyDump(func(ctx echo.Context, reqBody, resBody []byte) {
+		// Check for empty request and response body (can occur when connecting with ws).
+		if len(reqBody) == 0 && len(resBody) == 0 {
+			return
+		}
+
 		pkg.Logger.Info(
 			"request",
 			zap.String("requestBody", string(reqBody)),
