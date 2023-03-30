@@ -2,5 +2,5 @@
   "name": "Java",
   "version": "15.0.2",
   "extension": ".java",
-  "timeout": 4
+  "timeout": 10
 }
