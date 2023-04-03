@@ -35,7 +35,7 @@ type RceEngine struct {
 // NewRceEngine creates a new RceEngine instance that can be used to execute code.
 func NewRceEngine() *RceEngine {
 	return &RceEngine{
-		systemUsers: pool.NewSystemUser(amountOfUsers),
+		systemUsers: pool.NewSystemUsers(amountOfUsers),
 		pool:        pool.NewWorkerPool(amountOfUsers),
 		cache:       cache.NewCache[pool.CodeOutput](),
 	}
