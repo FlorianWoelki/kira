@@ -55,13 +55,20 @@ type ActionOutput struct {
 
 type actionFunc = func(data WorkData, output ActionOutput, terminate chan<- bool)
 
+// WorkType represents a unit of work to be executed by the worker pool.
 type WorkType struct {
-	data         WorkData
-	action       actionFunc
+	// data represents the input data for the work unit.
+	data WorkData
+	// action is the function that performs the actual work.
+	action actionFunc
+	// actionOutput represents the output of the work unit.
 	actionOutput ActionOutput
-	terminate    chan<- bool
+	// terminate is a channel used to signal the worker to terminate.
+	terminate chan<- bool
 }
 
+// NewWorkerPool creates a new worker pool instance with the specific number of worker
+// goroutines.
 func NewWorkerPool(nWorkers int) *WorkerPool {
 	var wg sync.WaitGroup
 
@@ -79,11 +86,14 @@ func NewWorkerPool(nWorkers int) *WorkerPool {
 	}
 }
 
+// SubmitJob adds a new work unit to the worker pool.
 func (wp *WorkerPool) SubmitJob(data WorkData, action actionFunc, actionOutput ActionOutput, terminate chan<- bool) {
 	work := WorkType{data, action, actionOutput, terminate}
 	wp.queue.enqueue(work)
 }
 
+// poolWorker is a worker goroutine that continually dequeues work units from the
+// provided queue and executes them.
 func poolWorker[T any](wg *sync.WaitGroup, queue *ConcurrentQueue[T], idx int) {
 	defer wg.Done()
 
@@ -94,6 +104,7 @@ func poolWorker[T any](wg *sync.WaitGroup, queue *ConcurrentQueue[T], idx int) {
 			os.Exit(0)
 		}
 
+		// Execute the actual work.
 		work := val.(WorkType)
 		work.action(work.data, work.actionOutput, work.terminate)
 	}
