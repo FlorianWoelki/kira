@@ -46,6 +46,7 @@ const App: React.FC = (): JSX.Element => {
   const testEditor = useCodeMirrorEditor();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [ws, setWs] = useState<WebSocket>();
 
   useEffect(() => {
     setStdin(template.defaultStdin);
@@ -65,6 +66,8 @@ const App: React.FC = (): JSX.Element => {
       const ws = new WebSocket(
         'ws://localhost:9090/execute?token=somerandomauthkey',
       );
+      setWs(ws);
+
       ws.addEventListener('open', () => {
         console.log('websocket connected!');
         ws.send(
@@ -87,6 +90,7 @@ const App: React.FC = (): JSX.Element => {
         } else if (parsed.type === 'terminate') {
           console.log('websocket disconnected!');
           ws.close();
+          setIsLoading(false);
         }
       });
     } else {
@@ -109,13 +113,24 @@ const App: React.FC = (): JSX.Element => {
       const jsonResult: CodeExecutionResult = await result.json();
       console.log(jsonResult);
       setCodeResult(jsonResult);
+      setIsLoading(false);
     }
+  };
 
-    setIsLoading(false);
+  const stopCode = () => {
+    ws?.send(JSON.stringify({ event: 'terminate' }));
   };
 
   const normalizeOutput = (value: string): string[] => {
     return value.split('\n');
+  };
+
+  const getButtonText = (): string => {
+    if (enableWebsocket) {
+      return isLoading ? 'Stop' : 'Run';
+    }
+
+    return 'Run';
   };
 
   return (
@@ -139,10 +154,20 @@ const App: React.FC = (): JSX.Element => {
             </Checkbox>
             <button
               className="flex items-center px-4 py-2 font-semibold text-green-800 transition duration-100 ease-in-out bg-green-400 rounded-lg hover:bg-green-500 disabled:cursor-not-allowed disabled:bg-opacity-50"
-              onClick={runCode}
-              disabled={isLoading}
+              onClick={() => {
+                if (enableWebsocket) {
+                  if (!isLoading) {
+                    runCode();
+                  } else {
+                    stopCode();
+                  }
+                } else {
+                  runCode();
+                }
+              }}
+              disabled={!enableWebsocket && isLoading}
             >
-              Run
+              {getButtonText()}
             </button>
             <input
               type="text"
