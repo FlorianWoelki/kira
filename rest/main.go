@@ -35,6 +35,7 @@ func main() {
 
 	origins := loadEnv(os.Getenv("ORIGINS"))
 	activeLanguages := loadEnv(os.Getenv("LANGUAGES"))
+	authKey := os.Getenv("AUTH_KEY")
 
 	err = pkg.CreateRunners()
 	if err != nil {
@@ -60,6 +61,11 @@ func main() {
 	loggerGroup := e.Group("")
 
 	// Apply middlewares.
+	if authKey != "" {
+		e.Use(middleware.KeyAuth(func(key string, context echo.Context) (bool, error) {
+			return key == authKey, nil
+		}))
+	}
 	e.Use(middleware.RateLimiterWithConfig(middleware.RateLimiterConfig{
 		Skipper: middleware.DefaultSkipper,
 		Store:   middleware.NewRateLimiterMemoryStore(100),

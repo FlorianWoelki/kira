@@ -94,6 +94,9 @@ const App: React.FC = (): JSX.Element => {
         }`,
         {
           method: 'POST',
+          headers: {
+            Authorization: 'Bearer somerandomauthkey',
+          },
           body: JSON.stringify({
             language: 'python',
             content: codeEditor.code,
