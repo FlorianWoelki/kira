@@ -26,6 +26,17 @@ $ go run rest/main.go
 
 The REST API will start on port `:9090`.
 
+### Environment Variables
+
+| Name | Description | Default Value | Required |
+| ---- | ----------- | ------------- | -------- |
+| `LANGUAGES` | Languages that are supported by the API | `empty` | 🟩 |
+| `PORT` | Port on which the REST API will run | `9090` | 🟥 |
+| `ORIGINS` | Origins that are allowed to access the API | `*` | 🟥 |
+| `AUTH_KEY` | Authentication key for the API | `empty` | 🟥 |
+
+If you want to secure the API with an `AUTH_KEY`, you need to make sure that this key is never exposed to the client side. Because the key is delivered through the query parameter `token=<AUTH_KEY>` in the REST API, it can be insecure to use it in a production environment. If you want to use it in a production environment, you need to make sure that the API is only accessible through a proxy server like nginx and the key is only delivered through the proxy server encrypted with TSL.
+
 ### REST API endpoints
 
 The following section contains all the REST API endpoints. The JSON body and endpoints follow the CLI structure.
