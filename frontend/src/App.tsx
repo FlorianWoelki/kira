@@ -62,7 +62,9 @@ const App: React.FC = (): JSX.Element => {
 
     // WebSocket just for testing.
     if (enableWebsocket) {
-      const ws = new WebSocket('ws://localhost:9090/execute');
+      const ws = new WebSocket(
+        'ws://localhost:9090/execute?token=somerandomauthkey',
+      );
       ws.addEventListener('open', () => {
         console.log('websocket connected!');
         ws.send(
@@ -91,12 +93,9 @@ const App: React.FC = (): JSX.Element => {
       const result = await fetch(
         `http://localhost:9090/execute${
           bypassCache ? '?bypass_cache=true' : ''
-        }`,
+        }&token=somerandomauthkey`,
         {
           method: 'POST',
-          headers: {
-            Authorization: 'Bearer somerandomauthkey',
-          },
           body: JSON.stringify({
             language: 'python',
             content: codeEditor.code,

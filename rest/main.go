@@ -62,8 +62,11 @@ func main() {
 
 	// Apply middlewares.
 	if authKey != "" {
-		e.Use(middleware.KeyAuth(func(key string, context echo.Context) (bool, error) {
-			return key == authKey, nil
+		e.Use(middleware.KeyAuthWithConfig(middleware.KeyAuthConfig{
+			KeyLookup: "query:token",
+			Validator: func(key string, c echo.Context) (bool, error) {
+				return key == authKey, nil
+			},
 		}))
 	}
 	e.Use(middleware.RateLimiterWithConfig(middleware.RateLimiterConfig{
