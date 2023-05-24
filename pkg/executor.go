@@ -99,6 +99,14 @@ func (rce *RceEngine) action(data pool.WorkData, output pool.ActionOutput, termi
 		return
 	}
 
+	// Send the execution information to the output channel if it is not nil.
+	if output.ExecutionInformation != nil {
+		output.ExecutionInformation <- pool.ExecutionInformation{
+			TempDirName: tempDirName,
+			User:        user,
+		}
+	}
+
 	executableFilename := internal.ExecutableFile(user.Username, tempDirName, "app")
 	codeOutput := pool.CodeOutput{User: *user, TempDirName: tempDirName}
 
@@ -191,6 +199,8 @@ type PipeChannel struct {
 	Data chan string
 	// Terminate describes whether the execution has terminated or not.
 	Terminate chan bool
+	// ExecutionInformation describes the information about the execution.
+	ExecutionInformation chan pool.ExecutionInformation
 }
 
 // DispatchOnce dispatches a new job to the worker pool and returns the output of the
@@ -212,13 +222,13 @@ func (rce *RceEngine) DispatchStream(data pool.WorkData, pipeChannel PipeChannel
 func (rce *RceEngine) Dispatch(data pool.WorkData, pipeChannel PipeChannel) pool.CodeOutput {
 	if pipeChannel != (PipeChannel{}) {
 		// Websocket connection and streams the output to the channels.
-		actionOutput := pool.ActionOutput{Stream: pipeChannel.Data}
+		actionOutput := pool.ActionOutput{Stream: pipeChannel.Data, ExecutionInformation: pipeChannel.ExecutionInformation}
 		rce.pool.SubmitJob(data, rce.action, actionOutput, pipeChannel.Terminate)
 		return pool.CodeOutput{}
 	} else {
 		// One-time execution.
 		terminate := make(chan bool)
-		actionOutput := pool.ActionOutput{Once: make(chan pool.CodeOutput)}
+		actionOutput := pool.ActionOutput{Once: make(chan pool.CodeOutput), ExecutionInformation: pipeChannel.ExecutionInformation}
 		rce.pool.SubmitJob(data, rce.action, actionOutput, terminate)
 		// When the `terminate` channel was called, it will break this for loop and return
 		// either an empty struct or the struct with the output.

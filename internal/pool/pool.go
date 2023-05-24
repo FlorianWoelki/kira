@@ -48,8 +48,20 @@ type WorkData struct {
 	BypassCache bool
 }
 
+type ExecutionInformation struct {
+	TempDirName string
+	User        *User
+}
+
 type ActionOutput struct {
-	Once   chan CodeOutput
+	// ExecutionInformation is a channel that is used to send the execution information
+	// to the client which contains the name of the temporary directory and the user.
+	ExecutionInformation chan ExecutionInformation
+	// Once is a channel that is used to send the code output to the client once with the
+	// REST API.
+	Once chan CodeOutput
+	// Stream is a channel that is used to send the code output to the client continuously
+	// with the WebSocket API.
 	Stream chan string
 }
 
