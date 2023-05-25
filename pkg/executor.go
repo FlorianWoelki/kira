@@ -196,7 +196,7 @@ func (rce *RceEngine) action(data pool.WorkData, output pool.ActionOutput, termi
 
 type PipeChannel struct {
 	// Data which represents the streamed output by the execution.
-	Data chan string
+	Data chan pool.StreamOutput
 	// Terminate describes whether the execution has terminated or not.
 	Terminate chan bool
 	// ExecutionInformation describes the information about the execution.
@@ -286,7 +286,7 @@ func (rce *RceEngine) compileFile(file, executableFile string, language Language
 
 // executeFileWs executes the file and pipes the output (that is being scanned in a
 // go routine) to the `data` channel.
-func (rce *RceEngine) executeFileWs(currentUser, file, executableFile string, stdin []string, language Language, data chan<- string) {
+func (rce *RceEngine) executeFileWs(currentUser, file, executableFile string, stdin []string, language Language, data chan<- pool.StreamOutput) {
 	runScript := fmt.Sprintf("/kira/languages/%s/%s.sh", strings.ToLower(language.Name), "run")
 
 	input := ""
@@ -309,6 +309,7 @@ func (rce *RceEngine) executeFileWs(currentUser, file, executableFile string, st
 	scanner.Split(bufio.ScanLines)
 	go func() {
 		outputBuffer := ""
+		now := time.Now()
 		for scanner.Scan() {
 			line := scanner.Text()
 			outputBuffer += line
@@ -316,14 +317,25 @@ func (rce *RceEngine) executeFileWs(currentUser, file, executableFile string, st
 				break
 			}
 
-			data <- line
+			data <- pool.StreamOutput{
+				Output: line,
+				Error:  "",
+				Time:   time.Since(now).Milliseconds(),
+			}
+
+			// Reset the timer for the next line.
+			now = time.Now()
 		}
 	}()
 
 	_ = cmd.Wait()
 
 	if errBuffer.Len() != 0 {
-		data <- errBuffer.String()
+		data <- pool.StreamOutput{
+			Output: "",
+			Error:  errBuffer.String(),
+			Time:   0,
+		}
 	}
 }
 

@@ -53,6 +53,12 @@ type ExecutionInformation struct {
 	User        *User
 }
 
+type StreamOutput struct {
+	Output string
+	Error  string
+	Time   int64
+}
+
 type ActionOutput struct {
 	// ExecutionInformation is a channel that is used to send the execution information
 	// to the client which contains the name of the temporary directory and the user.
@@ -62,7 +68,7 @@ type ActionOutput struct {
 	Once chan CodeOutput
 	// Stream is a channel that is used to send the code output to the client continuously
 	// with the WebSocket API.
-	Stream chan string
+	Stream chan StreamOutput
 }
 
 type actionFunc = func(data WorkData, output ActionOutput, terminate chan<- bool)

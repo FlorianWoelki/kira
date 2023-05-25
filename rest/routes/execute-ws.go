@@ -21,6 +21,8 @@ type socketData struct {
 type wsResponse struct {
 	Type      string `json:"type"`
 	RunOutput string `json:"runOutput"`
+	Time      int64  `json:"time"`
+	Error     string `json:"error"`
 }
 
 type wsMessage struct {
@@ -41,7 +43,7 @@ func ExecuteWs(c echo.Context, rceEngine *pkg.RceEngine) error {
 
 		// Execute the code of the client.
 		pipeChannel := pkg.PipeChannel{
-			Data:                 make(chan string),
+			Data:                 make(chan pool.StreamOutput),
 			Terminate:            make(chan bool),
 			ExecutionInformation: make(chan pool.ExecutionInformation),
 		}
@@ -86,7 +88,9 @@ func ExecuteWs(c echo.Context, rceEngine *pkg.RceEngine) error {
 			case output := <-pipeChannel.Data:
 				response := wsResponse{
 					Type:      "output",
-					RunOutput: output,
+					RunOutput: output.Output,
+					Time:      output.Time,
+					Error:     output.Error,
 				}
 
 				// Send the result of the code back to the client.
