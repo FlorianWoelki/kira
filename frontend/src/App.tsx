@@ -46,7 +46,30 @@ const App: React.FC = (): JSX.Element => {
   const testEditor = useCodeMirrorEditor();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [ws, setWs] = useState<WebSocket>();
+  const [websocket, setWebsocket] = useState<WebSocket>();
+
+  useEffect(() => {
+    const ws = new WebSocket(
+      'ws://localhost:9090/execute?token=somerandomauthkey',
+    );
+    ws.addEventListener('open', () => {
+      console.log('websocket connected!');
+    });
+    ws.addEventListener('message', (event) => {
+      const parsed = JSON.parse(event.data);
+      console.log('from ws:', parsed);
+      if (parsed.type === 'output') {
+        setWebsocketResult((prev) => {
+          const result = [...prev];
+          result.push(parsed.runOutput);
+          return result;
+        });
+      } else if (parsed.type === 'terminate') {
+        setIsLoading(false);
+      }
+    });
+    setWebsocket(ws);
+  }, []);
 
   useEffect(() => {
     setStdin(template.defaultStdin);
@@ -62,37 +85,15 @@ const App: React.FC = (): JSX.Element => {
     setWebsocketResult([]);
 
     // WebSocket just for testing.
-    if (enableWebsocket) {
-      const ws = new WebSocket(
-        'ws://localhost:9090/execute?token=somerandomauthkey',
+    if (enableWebsocket && websocket) {
+      websocket.send(
+        JSON.stringify({
+          event: 'execute',
+          language: 'python',
+          content: codeEditor.code,
+          stdin: [stdin],
+        }),
       );
-      setWs(ws);
-
-      ws.addEventListener('open', () => {
-        console.log('websocket connected!');
-        ws.send(
-          JSON.stringify({
-            language: 'python',
-            content: codeEditor.code,
-            stdin: [stdin],
-          }),
-        );
-      });
-      ws.addEventListener('message', (event) => {
-        const parsed = JSON.parse(event.data);
-        console.log('from ws:', parsed);
-        if (parsed.type === 'output') {
-          setWebsocketResult((prev) => {
-            const result = [...prev];
-            result.push(parsed.runOutput);
-            return result;
-          });
-        } else if (parsed.type === 'terminate') {
-          console.log('websocket disconnected!');
-          ws.close();
-          setIsLoading(false);
-        }
-      });
     } else {
       const result = await fetch(
         `http://localhost:9090/execute${
@@ -118,7 +119,7 @@ const App: React.FC = (): JSX.Element => {
   };
 
   const stopCode = () => {
-    ws?.send(JSON.stringify({ event: 'terminate' }));
+    websocket?.send(JSON.stringify({ event: 'terminate' }));
   };
 
   const normalizeOutput = (value: string): string[] => {
