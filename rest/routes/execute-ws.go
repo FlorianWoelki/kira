@@ -47,8 +47,7 @@ func ExecuteWs(c echo.Context, rceEngine *pkg.RceEngine) error {
 				ExecutionInformation: make(chan pool.ExecutionInformation),
 			}
 
-			switch data.Event {
-			case "execute":
+			if data.Event == "execute" {
 				// Execute the code of the client.
 				go rceEngine.DispatchStream(pool.WorkData{
 					Lang:        data.Language,
@@ -57,6 +56,36 @@ func ExecuteWs(c echo.Context, rceEngine *pkg.RceEngine) error {
 					Tests:       []pool.TestResult{},
 					BypassCache: true,
 				}, pipeChannel)
+
+				// Wait for possible termination event.
+				go func() {
+					data := wsEvent{}
+					err := websocket.JSON.Receive(ws, &data)
+					if err != nil {
+						fmt.Println("receiving error:", err)
+						return
+					}
+
+					if data.Event == "terminate" {
+						if executionInformation == (pool.ExecutionInformation{}) {
+							return
+						}
+
+						if err != nil {
+							// TODO: Maybe remove in the future, there is currently no other way to check if
+							// the connection was closed by the client.
+							if strings.Contains(err.Error(), "use of closed network connection") {
+								return
+							}
+
+							fmt.Println("receiving error:", err)
+							return
+						}
+
+						pipeChannel.Terminate <- true
+						rceEngine.CleanUp(executionInformation.User, executionInformation.TempDirName)
+					}
+				}()
 
 			Executor:
 				for {
@@ -94,29 +123,7 @@ func ExecuteWs(c echo.Context, rceEngine *pkg.RceEngine) error {
 						break Executor
 					}
 				}
-			case "terminate":
-				if executionInformation == (pool.ExecutionInformation{}) {
-					continue
-				}
-
-				if err != nil {
-					// TODO: Maybe remove in the future, there is currently no other way to check if
-					// the connection was closed by the client.
-					if strings.Contains(err.Error(), "use of closed network connection") {
-						continue
-					}
-
-					fmt.Println("receiving error:", err)
-					continue
-				}
-
-				if data.Event == "terminate" {
-					pipeChannel.Terminate <- true
-					rceEngine.CleanUp(executionInformation.User, executionInformation.TempDirName)
-					continue
-				}
 			}
-
 		}
 	}).ServeHTTP(c.Response(), c.Request())
 
