@@ -307,26 +307,21 @@ func (rce *RceEngine) executeFileWs(currentUser, file, executableFile string, st
 
 	scanner := bufio.NewScanner(pipe)
 	scanner.Split(bufio.ScanLines)
-	go func() {
-		outputBuffer := ""
-		now := time.Now()
-		for scanner.Scan() {
-			line := scanner.Text()
-			outputBuffer += line
-			if len(outputBuffer) >= maxOutputBufferCapacity {
-				break
-			}
-
-			data <- pool.StreamOutput{
-				Output: line,
-				Error:  "",
-				Time:   time.Since(now).Milliseconds(),
-			}
-
-			// Reset the timer for the next line.
-			now = time.Now()
+	outputBuffer := ""
+	now := time.Now()
+	for scanner.Scan() {
+		line := scanner.Text()
+		outputBuffer += line
+		if len(outputBuffer) >= maxOutputBufferCapacity {
+			break
 		}
-	}()
+
+		data <- pool.StreamOutput{
+			Output: line,
+			Error:  "",
+			Time:   time.Since(now).Milliseconds(),
+		}
+	}
 
 	_ = cmd.Wait()
 
