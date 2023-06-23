@@ -27,6 +27,16 @@ type wsResponse struct {
 }
 
 func ExecuteWs(c echo.Context, rceEngine *pkg.RceEngine) error {
+	// Initialize later.
+	var executionInformation pool.ExecutionInformation
+
+	// Create a pipe channel to communicate with the stream.
+	pipeChannel := pkg.PipeChannel{
+		Data:                 make(chan pool.StreamOutput),
+		Terminate:            make(chan bool),
+		ExecutionInformation: make(chan pool.ExecutionInformation),
+	}
+
 	// Websocket connection does not get closed automatically.
 	websocket.Handler(func(ws *websocket.Conn) {
 		for {
@@ -38,16 +48,8 @@ func ExecuteWs(c echo.Context, rceEngine *pkg.RceEngine) error {
 				return
 			}
 
-			// Initialize later.
-			var executionInformation pool.ExecutionInformation
-
-			pipeChannel := pkg.PipeChannel{
-				Data:                 make(chan pool.StreamOutput),
-				Terminate:            make(chan bool),
-				ExecutionInformation: make(chan pool.ExecutionInformation),
-			}
-
-			if data.Event == "execute" {
+			switch data.Event {
+			case "execute":
 				// Execute the code of the client.
 				go rceEngine.DispatchStream(pool.WorkData{
 					Lang:        data.Language,
@@ -57,73 +59,64 @@ func ExecuteWs(c echo.Context, rceEngine *pkg.RceEngine) error {
 					BypassCache: true,
 				}, pipeChannel)
 
-				// Wait for possible termination event.
 				go func() {
-					data := wsEvent{}
-					err := websocket.JSON.Receive(ws, &data)
-					if err != nil {
-						fmt.Println("receiving error:", err)
-						return
-					}
-
-					if data.Event == "terminate" {
-						if executionInformation == (pool.ExecutionInformation{}) {
-							return
-						}
-
-						if err != nil {
-							// TODO: Maybe remove in the future, there is currently no other way to check if
-							// the connection was closed by the client.
-							if strings.Contains(err.Error(), "use of closed network connection") {
-								return
+				Executor:
+					for {
+						select {
+						case execInformation := <-pipeChannel.ExecutionInformation:
+							executionInformation = execInformation
+						case output := <-pipeChannel.Data:
+							response := wsResponse{
+								Type:      "output",
+								RunOutput: output.Output,
+								Time:      output.Time,
+								Error:     output.Error,
 							}
 
-							fmt.Println("receiving error:", err)
-							return
-						}
+							// Send the result of the code back to the client.
+							err = websocket.JSON.Send(ws, response)
+							if err != nil {
+								fmt.Println("sending error:", err)
+								break Executor
+							}
 
-						pipeChannel.Terminate <- true
-						rceEngine.CleanUp(executionInformation.User, executionInformation.TempDirName)
+							logResponse(data, response)
+						case <-pipeChannel.Terminate:
+							response := wsResponse{
+								Type:      "terminate",
+								RunOutput: "",
+							}
+							err = websocket.JSON.Send(ws, response)
+							if err != nil {
+								fmt.Println("sending error:", err)
+								break Executor
+							}
+
+							logResponse(data, response)
+							break Executor
+						}
 					}
 				}()
-
-			Executor:
-				for {
-					select {
-					case execInformation := <-pipeChannel.ExecutionInformation:
-						executionInformation = execInformation
-					case output := <-pipeChannel.Data:
-						response := wsResponse{
-							Type:      "output",
-							RunOutput: output.Output,
-							Time:      output.Time,
-							Error:     output.Error,
-						}
-
-						// Send the result of the code back to the client.
-						err = websocket.JSON.Send(ws, response)
-						if err != nil {
-							fmt.Println("sending error:", err)
-							break Executor
-						}
-
-						logResponse(data, response)
-					case <-pipeChannel.Terminate:
-						response := wsResponse{
-							Type:      "terminate",
-							RunOutput: "",
-						}
-						err = websocket.JSON.Send(ws, response)
-						if err != nil {
-							fmt.Println("sending error:", err)
-							break Executor
-						}
-
-						logResponse(data, response)
-						break Executor
-					}
+			case "terminate":
+				if executionInformation == (pool.ExecutionInformation{}) {
+					continue
 				}
+
+				if err != nil {
+					// TODO: Maybe remove in the future, there is currently no other way to check if
+					// the connection was closed by the client.
+					if strings.Contains(err.Error(), "use of closed network connection") {
+						continue
+					}
+
+					fmt.Println("receiving error:", err)
+					continue
+				}
+
+				pipeChannel.Terminate <- true
+				rceEngine.CleanUp(executionInformation.User, executionInformation.TempDirName)
 			}
+
 		}
 	}).ServeHTTP(c.Response(), c.Request())
 
