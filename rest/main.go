@@ -111,6 +111,7 @@ func main() {
 
 	// Define REST endpoints.
 	e.GET("/languages", routes.Languages)
+	e.GET("/health", routes.CheckHealth)
 	// Enables a websocket connection for piping the execution output.
 	loggerGroup.GET("/execute", func(c echo.Context) error {
 		return routes.ExecuteWs(c, rce)
