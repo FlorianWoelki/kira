@@ -28,16 +28,26 @@ func loadEnv(str string) []string {
 }
 
 func main() {
-	err := godotenv.Load("rest/local.env")
-	if err != nil {
-		logger.Fatalf("Error occurred while loading env file: %s", err)
+	// Checks for the environment and loads the specific env file.
+	env := os.Getenv("KIRA_ENV")
+	if env == "" {
+		env = "development"
+		// Loads the default env file which is being commited to the repository.
+		godotenv.Load("rest/.env." + env)
+	} else {
+		err := godotenv.Load("rest/.env." + env + ".local")
+		if err != nil {
+			logger.Fatalf("Error occurred while loading env file: %s", err)
+		}
 	}
+	// Always load the default .env file.
+	godotenv.Load()
 
 	origins := loadEnv(os.Getenv("ORIGINS"))
 	activeLanguages := loadEnv(os.Getenv("LANGUAGES"))
 	authKey := os.Getenv("AUTH_KEY")
 
-	err = pkg.CreateRunners()
+	err := pkg.CreateRunners()
 	if err != nil {
 		logger.Fatalf("Error while trying to create runners: %v+", err)
 	}

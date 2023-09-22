@@ -2,6 +2,8 @@ version: '3.7'
 
 services:
   kira:
+    environment:
+      - KIRA_ENV=$KIRA_ENV
     restart: always
     build: '.'
     container_name: kira

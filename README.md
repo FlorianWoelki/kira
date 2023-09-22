@@ -16,6 +16,16 @@ It is required for the sandbox environment to have a docker image that exposes a
 docker compose up
 ```
 
+You can also set the environment by adjust the `KIRA_ENV` while running docker compose.
+The default value is `development` and will use the `.env.development` file.
+
+```sh
+KIRA_ENV=production docker compose up
+```
+
+If you run the described command above, you need to create a `rest/.env.production.local`
+with the contents of the `rest/.env.development` file.
+
 ## Usage
 
 You can feel free to run the REST API by executing the `main.go` file in the `rest` directory with the following command:
