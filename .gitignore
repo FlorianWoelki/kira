@@ -21,4 +21,8 @@ kira
 logs*
 __pycache__
 
+# MacOS files
 .DS_Store
+
+# Non local environment files
+.env.local
